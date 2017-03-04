@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="97">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <logicalFolder name="src" displayName="src" projectFiles="true">
+        <logicalFolder name="headers" displayName="headers" projectFiles="true">
+          <logicalFolder name="ext" displayName="ext" projectFiles="true">
+            <itemPath>src/headers/ext/ACSharedFileOut.h</itemPath>
+            <itemPath>src/headers/ext/SharedMemory.h</itemPath>
+          </logicalFolder>
+          <itemPath>src/headers/ACApi.h</itemPath>
+          <itemPath>src/headers/jSon.h</itemPath>
+          <itemPath>src/headers/logger.h</itemPath>
+          <itemPath>src/headers/pcarsApi.h</itemPath>
+          <itemPath>src/headers/pcarsDump.h</itemPath>
+          <itemPath>src/headers/restWS.h</itemPath>
+          <itemPath>src/headers/serial.h</itemPath>
+          <itemPath>src/headers/serialwin.h</itemPath>
+          <itemPath>src/headers/serversocket.h</itemPath>
+          <itemPath>src/headers/simController.h</itemPath>
+          <itemPath>src/headers/simSource.h</itemPath>
+          <itemPath>src/headers/stringutils.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="lib" displayName="lib" projectFiles="true">
+          <itemPath>src/lib/ACApi.c</itemPath>
+          <itemPath>src/lib/jSon.c</itemPath>
+          <itemPath>src/lib/logger.c</itemPath>
+          <itemPath>src/lib/pCarsDump.c</itemPath>
+          <itemPath>src/lib/pcarsApi.c</itemPath>
+          <itemPath>src/lib/restWS.c</itemPath>
+          <itemPath>src/lib/serial.c</itemPath>
+          <itemPath>src/lib/serialwin.c</itemPath>
+          <itemPath>src/lib/serversocket.c</itemPath>
+          <itemPath>src/lib/simController.c</itemPath>
+          <itemPath>src/lib/simSource.c</itemPath>
+          <itemPath>src/lib/stringutils.c</itemPath>
+        </logicalFolder>
+        <logicalFolder name="server" displayName="server" projectFiles="true">
+          <itemPath>src/server/bsServer.c</itemPath>
+        </logicalFolder>
+      </logicalFolder>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceRootList>
+    <Elem>src</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <linkerTool>
+          <linkerAddLib>
+            <pElem>src/lib/ext</pElem>
+          </linkerAddLib>
+          <linkerLibItems>
+            <linkerLibLibItem>cygjansson-4</linkerLibLibItem>
+            <linkerLibLibItem>cygmicrohttpd-10</linkerLibLibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="src/headers/ACApi.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/ext/ACSharedFileOut.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/ext/SharedMemory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/jSon.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/logger.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/pcarsApi.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/pcarsDump.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/restWS.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/serial.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/serialwin.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/serversocket.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/simController.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/simSource.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/stringutils.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/lib/ACApi.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/jSon.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/logger.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/pCarsDump.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/pcarsApi.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/restWS.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/serial.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/serialwin.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/serversocket.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/simController.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/simSource.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/stringutils.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/server/bsServer.c" ex="false" tool="0" flavor2="0">
+      </item>
+    </conf>
+    <conf name="Release" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+      </compileType>
+      <item path="src/headers/ACApi.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/ext/ACSharedFileOut.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/ext/SharedMemory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/jSon.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/logger.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/pcarsApi.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/pcarsDump.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/restWS.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/serial.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/serialwin.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/serversocket.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/simController.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/simSource.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/headers/stringutils.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/lib/ACApi.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/jSon.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/logger.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/pCarsDump.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/pcarsApi.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/restWS.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/serial.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/serialwin.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/serversocket.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/simController.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/simSource.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/lib/stringutils.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/server/bsServer.c" ex="false" tool="0" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
