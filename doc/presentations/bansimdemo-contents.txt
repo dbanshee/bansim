@@ -1,0 +1,13 @@
+BanSim - 2017
+
+Contenido para presentacion de invitados.
+
+
+- Qué es un simulador. Diferencias arcade. 
+- Tipos de coche.
+	. Levas, secuencial, manual.
+	. Sensibilidad pedales
+- Session en pista.
+	. Pitlane. Entrada y salida. Limitador.
+	. Trazada
+	. Referencias y carteles
