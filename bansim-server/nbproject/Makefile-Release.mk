@@ -64,7 +64,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=-Lsrc/lib/ext -lcygjansson-4 -lcygmicrohttpd-10
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}

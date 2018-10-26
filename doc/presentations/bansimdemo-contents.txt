@@ -7,6 +7,7 @@ Contenido para presentacion de invitados.
 - Tipos de coche.
 	. Levas, secuencial, manual.
 	. Sensibilidad pedales
+	. Temperatura Neumáticos
 - Session en pista.
 	. Pitlane. Entrada y salida. Limitador.
 	. Trazada

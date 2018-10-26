@@ -158,6 +158,15 @@
         <asmTool>
           <developmentMode>5</developmentMode>
         </asmTool>
+        <linkerTool>
+          <linkerAddLib>
+            <pElem>src/lib/ext</pElem>
+          </linkerAddLib>
+          <linkerLibItems>
+            <linkerLibLibItem>cygjansson-4</linkerLibLibItem>
+            <linkerLibLibItem>cygmicrohttpd-10</linkerLibLibItem>
+          </linkerLibItems>
+        </linkerTool>
       </compileType>
       <item path="src/headers/ACApi.h" ex="false" tool="3" flavor2="0">
       </item>
