@@ -205,8 +205,10 @@ float getMaxRpms(simSourceContext* ctx);
 float getRpm(simSourceContext* ctx);
 float getGear(simSourceContext* ctx);
 float getThrottle(simSourceContext* ctx);
-
-
+int getPitLimiter(simSourceContext* ctx);
+int getFlagStatus(simSourceContext* ctx);
+float getTurboBoost(simSourceContext* ctx);
+int getDRS(simSourceContext* ctx);
 
 #endif	/* SIMSOURCE_H */
 

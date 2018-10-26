@@ -19,6 +19,10 @@
 #define BINARY_CMD_NEUTRAL              0x03
 #define BINARY_CMD_KITT                 0x04
 #define BINARY_CMD_TC                   0x05
+#define BINARY_CMD_FLAGS                0x06
+#define BINARY_CMD_PITLIMIT             0x07
+#define BINARY_CMD_BOOST                0x08
+#define BINARY_CMD_DRS                  0x09
 
 
 static int  lastGameState   = 0;
@@ -27,6 +31,10 @@ static int  lastSpeed       = 0;
 static int  lastTCRpms      = 0;
 static int  lastGear        = 0;
 static int  lastEngineOn    = 0;
+static int  lastFlag        = AC_NO_FLAG;
+static int  lastPitLimiter  = 0;
+static int  lastBoost       = 0;
+static int  lastDrs         = 0;
 
 
 static int blinkOn = 0;     // 3 estados. 0=OFF, 1=MARCADO, 2=ON
@@ -223,9 +231,41 @@ void refreshTachometer(simCtrlContext* ctx) {
     }
 }
 
+int refreshLED2Bar(simCtrlContext* ctx){    
+    int gameState = getGameState(ctx->simSrcCtx);
+    
+    if(gameState == GAME_INGAME_PLAYING){
+        int pitLimit = getPitLimiter(ctx->simSrcCtx);
+        int flag = getFlagStatus(ctx->simSrcCtx);
+        int boost = getTurboBoost(ctx->simSrcCtx);
+        int drs = getDRS(ctx->simSrcCtx);
+        
+        if(lastFlag != flag) {
+            sendSimBoardCmdInt(&ctx->serialCtx, BINARY_CMD_FLAGS, flag);
+            lastFlag = flag;
+        }
+        
+        if(lastPitLimiter != pitLimit) {
+            sendSimBoardCmdInt(&ctx->serialCtx, BINARY_CMD_PITLIMIT, pitLimit);
+            lastPitLimiter = pitLimit;
+        }
+        
+        if(lastBoost != boost) {
+            sendSimBoardCmdInt(&ctx->serialCtx, BINARY_CMD_BOOST, boost);
+            lastBoost = boost;
+        }
+        
+        if(lastDrs != drs) {
+            sendSimBoardCmdInt(&ctx->serialCtx, BINARY_CMD_DRS, drs);
+            lastDrs = drs;
+        }
+    }
+}
+
 
 int refreshMainPanel(simCtrlContext* ctx){
     refreshLEDBar(ctx);
+    refreshLED2Bar(ctx);
 //    refresh8Segments(ctx);
     refreshTachometer(ctx);
 }

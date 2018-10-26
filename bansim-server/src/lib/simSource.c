@@ -1062,3 +1062,48 @@ int getGameState(simSourceContext* ctx){
         return -1;
     }
 }
+
+int getPitLimiter(simSourceContext* ctx){
+    if(ctx->currentGame == PCARS_GAME){
+        return 0;
+    } else if(ctx->currentGame == ASSETTO_GAME){
+        return ctx->assettoSourceCtx.acCtx->hFileGraphics->pitLimiterOn;
+    } else {
+        return -1;
+    }
+}
+
+int getFlagStatus(simSourceContext* ctx){
+    if(ctx->currentGame == PCARS_GAME){
+        return 0;
+    } else if(ctx->currentGame == ASSETTO_GAME){
+        return ctx->assettoSourceCtx.acCtx->hFileGraphics->flag;
+    } else {
+        return -1;
+    }
+}
+
+float getTurboBoost(simSourceContext* ctx){
+    if(ctx->currentGame == PCARS_GAME){
+        return 0;
+    } else if(ctx->currentGame == ASSETTO_GAME){
+        return ctx->assettoSourceCtx.acCtx->hFilePhysics->turboBoost;
+    } else {
+        return -1;
+    }
+}
+
+int getDRS(simSourceContext* ctx){
+    if(ctx->currentGame == PCARS_GAME){
+        return 0;
+    } else if(ctx->currentGame == ASSETTO_GAME){
+        int result = ctx->assettoSourceCtx.acCtx->hFilePhysics->drsAvailable;
+        int drsEnabled = ctx->assettoSourceCtx.acCtx->hFilePhysics->drsEnabled;
+        if(drsEnabled == 1) {
+            result = 2;
+        }
+        return result;
+    } else {
+        return -1;
+    }
+}
