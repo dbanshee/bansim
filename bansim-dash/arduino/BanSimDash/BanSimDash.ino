@@ -225,9 +225,6 @@ void loop() {
   }
 }
 
-/*
- * Reads serial port ASCII command
- */
 boolean readASCIICommand() {
   char c;
   while(Serial.available() > 0) {
@@ -244,9 +241,6 @@ boolean readASCIICommand() {
   return false;
 }
 
-/*
- * Execute ASCII command
- */
 void executeASCIICommand() {
   uint8_t error;
   cmd[cmdlen] = '\0';
@@ -279,11 +273,6 @@ void executeASCIICommand() {
   Serial.flush();
 }
 
-/*
- *  Lee y ehecuta un comando binario.
- *  
- *  Un comando binario consta de 2 bytes. <OP><VALUE>
- */
 boolean executeBinaryCommand(){
   // Read Operand
   boolean cmdRes = false;
@@ -302,7 +291,7 @@ boolean executeBinaryCommand(){
   }
 
   switch(op) {
-    case byte( BINARY_CMD_CHANGE_MODE):
+    case byte(BINARY_CMD_CHANGE_MODE):
       //binarySetLeds1();
       break;
     case byte(BINARY_CMD_LED1):
@@ -349,10 +338,6 @@ boolean executeBinaryCommand(){
   return cmdRes;
 }
 
-
-/*
- * Parsea y ejecuta un comando ASCII
- */
 uint8_t cmdSet(char* v) {
  
   if(strncmp(v,"ECHO=",5) == 0) {
@@ -411,17 +396,11 @@ uint8_t cmdSet(char* v) {
 
 
 ////////////////////////////
-// Manejadores de comandos
+// Command Handlers
 ////////////////////////////
-
-
-/*
- * Echo Handler
- */
 void setEcho(uint8_t echoMode) {
   echo = echoMode;
 }
-
 
 void binarySetLeds1(){
   if(Serial.available() < 1)
@@ -433,14 +412,10 @@ void binarySetLeds1(){
   setLeds1(value);
 }
 
-/* 
- * Establece la tira de leds1 a 'numLeds'
- */
 void setLeds1(uint8_t numLeds) {
    leds1Mode    = LED1_INTERRUPT_MODE_NONE;
    nLeds1Active = numLeds;   
 }
-
 
 void binarySetLeds1Blink(){
   if(Serial.available() < 1)
@@ -452,11 +427,6 @@ void binarySetLeds1Blink(){
   setLeds1Blink(value);
 }
 
-/*
- * Activa/Desactiva el parpadeo de leds1 
- * 
- * Cualquier otro comando sobre leds1 desactivara el parpadeo
- */
 void setLeds1Blink(uint8_t blink) {
   if(blink == 1){
     leds1Mode     = LED1_INTERRUPT_MODE_BLINK;
@@ -476,12 +446,6 @@ void binarySetNeutral(){
   setNeutral(value);
 }
 
-/*
- * Activa/Desactica el modo neutral de leds1
- * 
- * Cualquier otro comando sobre leds1 desactivara el modo neutral
- * Establece el numero de leds activos a 0. 
- */
 void setNeutral(uint8_t neutral) {
   if(neutral == 1){
     leds1Mode         = LED1_INTERRUPT_MODE_NEUTRAL;
@@ -503,12 +467,6 @@ void binarySetKitt(){
   setKitt(value);
 }
 
-/*
- * Activa/Desactica el modo neutral de leds1
- * 
- * Cualquier otro comando sobre leds1 desactivara el modo neutral
- * Establece el numero de leds activos a 0. 
- */
 void setKitt(uint8_t kitt) {
  if(kitt == 1){
     leds1Mode          = LED1_INTERRUPT_MODE_KITT;
@@ -541,11 +499,6 @@ void binarySetTachometer(){
   sei();
 }
 
-/*
- * Establece la señal de tacometro a las rpms indicadas.
- * 
- * Usado Timer3
- */
 void setTachometer(uint16_t rpms) {
   if(echo) { Serial.print("Set TC rpms:"); Serial.print(rpms); }
   
@@ -652,11 +605,6 @@ void setABS(byte abs) {
   absStatus[ABS_RL_BIT] = bitRead(abs, ABS_RL_BIT);
 }
 
-
-
-/*
- * Help Handler
- */
 uint8_t cmdHelp() {
   Serial.print("\n\nBanSimBoard - Help  Version : ");
   Serial.println(BANSIMBOARD_VERSION);
@@ -681,10 +629,6 @@ uint8_t cmdHelp() {
   return 0;
 }
 
-
-/*
- * Version Handler
- */
 uint8_t cmdVersion() {
   Serial.print("\n\nBanSimBoard - Version : ");
   Serial.println(BANSIMBOARD_VERSION);
@@ -694,11 +638,6 @@ uint8_t cmdVersion() {
 //-------------------
 // Led Array Funcs
 //-------------------
-
-/*
- * Enciende 'numLeds' de leds segun el esquema de color predefinido
- */
-
 void loadLedArray(uint8_t numLeds){
   uint8_t i;
   
@@ -714,9 +653,6 @@ void loadLedArray(uint8_t numLeds){
   }  
 }
 
-/*
- * Establece la tira de leds en modo neutral en funcion de 'phase' (leds pares o impares)
- */
 void loadLedNeutralArray(uint8_t numLeds, uint8_t phase){
   uint8_t i;
   
@@ -733,7 +669,6 @@ void loadLedNeutralArray(uint8_t numLeds, uint8_t phase){
     }
   }  
 }
-
 
 void loadLedKittArray(uint8_t numLeds, int8_t phase, int8_t dir){
   uint8_t i;
@@ -753,9 +688,6 @@ void loadLedKittArray(uint8_t numLeds, int8_t phase, int8_t dir){
   }  
 }
 
-/*
- * Apaga la tira de leds
- */
 void clearLedArray(){
   uint8_t i;  
   for(i = 0; i < DEFAULT_LED1_ARRAY_SIZE; i++) {
@@ -889,41 +821,36 @@ void refreshCallback(void){
   if(leds1Mode == LED1_INTERRUPT_MODE_NONE && nLeds1Active != lastNLeds1Active){
     loadLedArray(nLeds1Active);
     lastNLeds1Active = nLeds1Active;
-    processedLeds1 = 1;
+    processedLeds1   = 1;
   } 
   
 
   // Leds Blink
-  if(leds1Mode == LED1_INTERRUPT_MODE_BLINK && abs(currentTime-lastBlinkTime) > DEFAULT_LED1_BLINK_MILLIS){
+  if(processedLeds1 == 0 && (leds1Mode == LED1_INTERRUPT_MODE_BLINK && abs(currentTime-lastBlinkTime) > DEFAULT_LED1_BLINK_MILLIS)){
     lastBlinkTime = currentTime;
     
     if(ledsBlinkState == 0){
        loadLedArray(nLeds1Active);  
-       ledsBlinkState = 1;
     }else{
-       loadLedArray(0);      
-       ledsBlinkState = 0;
+       clearLedArray();      
     }
-
+    
+    ledsBlinkState = flipBlinkState(ledsBlinkState);
     processedLeds1 = 1;
   }
   
   // Leds Neutral
-  if(leds1Mode == LED1_INTERRUPT_MODE_NEUTRAL && abs(currentTime-lastNeutralTime) > DEFAULT_LED1_NEUTRAL_MILLIS){
+  if(processedLeds1 == 0 && (leds1Mode == LED1_INTERRUPT_MODE_NEUTRAL && abs(currentTime-lastNeutralTime) > DEFAULT_LED1_NEUTRAL_MILLIS)){
     lastNeutralTime = currentTime;
 
     loadLedNeutralArray(DEFAULT_LED1_ARRAY_SIZE, ledsNeutralState);  
     
-    if(ledsNeutralState == 0){
-       ledsNeutralState = 1;
-    }else{
-       ledsNeutralState = 0;
-    }
-    processedLeds1 = 1;
+    ledsNeutralState = flipBlinkState(ledsNeutralState);
+    processedLeds1   = 1;
   }
   
-   // Leds Kitt
-  if(leds1Mode == LED1_INTERRUPT_MODE_KITT && abs(currentTime-lastKittTime) > LED1_KITT_MILLIS && LED1_KITT_LEN < DEFAULT_LED1_ARRAY_SIZE){
+  // Leds Kitt
+  if(processedLeds1 == 0 && (leds1Mode == LED1_INTERRUPT_MODE_KITT && abs(currentTime-lastKittTime) > LED1_KITT_MILLIS && LED1_KITT_LEN < DEFAULT_LED1_ARRAY_SIZE)){
     lastKittTime = currentTime;
     
     if(ledsKittState <= -3 && ledsKittDirection == -1){
