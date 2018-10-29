@@ -57,17 +57,17 @@
 #define BINARY_CMD_BOOST              0x08
 #define BINARY_CMD_DRS                0x09
 
-
 // Timers Default periods
 #define REFRESH_TIMER_MICROSECS       1500L
 #define TACHOMETER_TIMER_MICROSECS    3000L
 
-// Led1 Config
-#define DEFAULT_LED_ARRAY_PIN         14
-#define DEFAULT_LED_ARRAY_SIZE        12
-#define DEFAULT_LED_BLINK_MILLIS      100L
-#define DEFAULT_LED_NEUTRAL_MILLIS    250L
+// Leds1 Strip Config
+#define DEFAULT_LED1_ARRAY_PIN        14
+#define DEFAULT_LED1_ARRAY_SIZE       12
+#define DEFAULT_LED1_BLINK_MILLIS     100L
+#define DEFAULT_LED1_NEUTRAL_MILLIS   250L
 
+// Leds1 Strip Config
 #define DEFAULT_LED2_ARRAY_PIN        15
 #define DEFAULT_LED2_ARRAY_SIZE       8
 #define DEFAULT_LED2_BLINK_MILLIS     500L
@@ -87,7 +87,7 @@ volatile uint8_t leds1Mode;
 volatile uint8_t nLeds1Active;
 volatile uint8_t lastNLeds1Active;
 
-// Leds Blink Control
+// Leds1 Blink Control
 volatile unsigned long lastBlinkTime;
 volatile uint8_t ledsBlinkState;
 
@@ -95,14 +95,17 @@ volatile uint8_t ledsBlinkState;
 volatile unsigned long lastBlinkTime2;
 volatile uint8_t ledsBlinkState2 = 0;
 
-// Leds Neutral Control
+// Leds1 Neutral Control
 volatile unsigned long lastNeutralTime;
 volatile uint8_t ledsNeutralState;
 
-// Leds Kitt Control
+// Leds1 Kitt Control
 volatile unsigned long lastKittTime;
 volatile int8_t ledsKittState;
 volatile int8_t ledsKittDirection;
+
+// Leds 2 current mode
+volatile byte lastLed2Mode = byte(BINARY_CMD_CHANGE_MODE);
 
 // Flag Control
 volatile uint8_t leds2FlagMode = 0;
@@ -126,7 +129,7 @@ volatile uint8_t lastLeds2DRSMode = 0;
 ////////////////
 
 // Adafruit leds controller - Necesario instanciar la variable? 
-Adafruit_NeoPixel leds(DEFAULT_LED_ARRAY_SIZE, DEFAULT_LED_ARRAY_PIN);
+Adafruit_NeoPixel leds1(DEFAULT_LED1_ARRAY_SIZE, DEFAULT_LED1_ARRAY_PIN);
 Adafruit_NeoPixel leds2(DEFAULT_LED2_ARRAY_SIZE, DEFAULT_LED2_ARRAY_PIN);
 
 //uint8_t inputMode = INPUT_MODE_ASCII;
@@ -137,10 +140,6 @@ char    cmd[16];
 uint8_t cmdlen = 0;
 uint8_t echo   = 1;
 
-// Array bytes para la lectura de comandos binarios
-// TODO: ...
-
-
 /* 
  * Main Setup
  */
@@ -149,7 +148,6 @@ void setup() {
   
   // Serial Initialization
   Serial.begin(SERIAL_SPEED);
-  //Serial1.begin(SERIAL_SPEED);
   
   // Generic set pin mode. Pins 0 y 1 reserved to USB-Serial port.
   for(i= 2; i<=16; i++) {
@@ -178,11 +176,11 @@ void setup() {
     
   
   // Initializacion de array de Leds 1
-  leds.setPin(DEFAULT_LED_ARRAY_PIN);
-  leds.setNumPixels(DEFAULT_LED_ARRAY_SIZE);
-  leds.setBrightness(LED1_DEFAULT_BRIGHTNESS);
+  leds1.setPin(DEFAULT_LED1_ARRAY_PIN);
+  leds1.setNumPixels(DEFAULT_LED1_ARRAY_SIZE);
+  leds1.setBrightness(LED1_DEFAULT_BRIGHTNESS);
   clearLedArray();
-  leds.show();
+  leds1.show();
   
   // Leds Mode
   leds1Mode = LED1_INTERRUPT_MODE_NONE;
@@ -322,7 +320,7 @@ boolean executeBinaryCommand(){
    case byte(BINARY_CMD_DRS):
       binarySetDRS();
       break;
-    default: 
+   default: 
       if(echo) Serial.println("Comando no reconocido.");
       cmdRes = true;
   }
@@ -665,13 +663,13 @@ void loadLedArray(uint8_t numLeds){
   uint8_t i;
   
   clearLedArray();
-  for(i = 0; i < numLeds && i < DEFAULT_LED_ARRAY_SIZE; i++){
+  for(i = 0; i < numLeds && i < DEFAULT_LED1_ARRAY_SIZE; i++){
     if(i < 4){
-      leds.setPixelColor(i, '\x00', '\xff', '\x00');
+      leds1.setPixelColor(i, '\x00', '\xff', '\x00');
     }else if(i < 8){
-      leds.setPixelColor(i, '\xff', '\x00', '\x00');
+      leds1.setPixelColor(i, '\xff', '\x00', '\x00');
     }else{
-      leds.setPixelColor(i, '\x00', '\x00', '\xff');
+      leds1.setPixelColor(i, '\x00', '\x00', '\xff');
     }
   }  
 }
@@ -683,14 +681,14 @@ void loadLedNeutralArray(uint8_t numLeds, uint8_t phase){
   uint8_t i;
   
   clearLedArray();
-  for(i = 0; i < numLeds && i < DEFAULT_LED_ARRAY_SIZE; i++){
+  for(i = 0; i < numLeds && i < DEFAULT_LED1_ARRAY_SIZE; i++){
     if(i % 2 == phase){
       if(i < 4){
-        leds.setPixelColor(i, '\x00', '\xff', '\x00');
+        leds1.setPixelColor(i, '\x00', '\xff', '\x00');
       }else if(i < 8){
-        leds.setPixelColor(i, '\xff', '\x00', '\x00');
+        leds1.setPixelColor(i, '\xff', '\x00', '\x00');
       }else{
-        leds.setPixelColor(i, '\x00', '\x00', '\xff');
+        leds1.setPixelColor(i, '\x00', '\x00', '\xff');
       }
     }
   }  
@@ -709,8 +707,8 @@ void loadLedKittArray(uint8_t numLeds, int8_t phase, int8_t dir){
     else 
       nLed = phase - i;
       
-    if(nLed >= 0 && nLed < DEFAULT_LED_ARRAY_SIZE){
-      leds.setPixelColor(nLed, '\xff', '\x00', '\x00');        
+    if(nLed >= 0 && nLed < DEFAULT_LED1_ARRAY_SIZE){
+      leds1.setPixelColor(nLed, '\xff', '\x00', '\x00');        
     }
   }  
 }
@@ -720,8 +718,8 @@ void loadLedKittArray(uint8_t numLeds, int8_t phase, int8_t dir){
  */
 void clearLedArray(){
   uint8_t i;  
-  for(i = 0; i < DEFAULT_LED_ARRAY_SIZE; i++) {
-     leds.setPixelColor(i, '\x00', '\x00', '\x00'); // setPixelColor(uint16_t n, uint32_t c), 
+  for(i = 0; i < DEFAULT_LED1_ARRAY_SIZE; i++) {
+     leds1.setPixelColor(i, '\x00', '\x00', '\x00'); // setPixelColor(uint16_t n, uint32_t c), 
   }
 }
 
@@ -805,6 +803,16 @@ unsigned long calculateTachPWMPeriod(uint16_t rpm) {
 }
 
 
+
+uint8_t flipBlinkState(uint8_t state) {
+  if(state >= 1) {
+    return 0;
+  } else {
+    return state + 1;    
+  }
+}
+
+
 /*
  * Refresh Callback
  */
@@ -828,7 +836,7 @@ void refreshCallback(void){
   
 
   // Leds Blink
-  if(leds1Mode == LED1_INTERRUPT_MODE_BLINK && abs(currentTime-lastBlinkTime) > DEFAULT_LED_BLINK_MILLIS){
+  if(leds1Mode == LED1_INTERRUPT_MODE_BLINK && abs(currentTime-lastBlinkTime) > DEFAULT_LED1_BLINK_MILLIS){
     lastBlinkTime = currentTime;
     
     if(ledsBlinkState == 0){
@@ -843,10 +851,10 @@ void refreshCallback(void){
   }
   
   // Leds Neutral
-  if(leds1Mode == LED1_INTERRUPT_MODE_NEUTRAL && abs(currentTime-lastNeutralTime) > DEFAULT_LED_NEUTRAL_MILLIS){
+  if(leds1Mode == LED1_INTERRUPT_MODE_NEUTRAL && abs(currentTime-lastNeutralTime) > DEFAULT_LED1_NEUTRAL_MILLIS){
     lastNeutralTime = currentTime;
 
-    loadLedNeutralArray(DEFAULT_LED_ARRAY_SIZE, ledsNeutralState);  
+    loadLedNeutralArray(DEFAULT_LED1_ARRAY_SIZE, ledsNeutralState);  
     
     if(ledsNeutralState == 0){
        ledsNeutralState = 1;
@@ -857,16 +865,16 @@ void refreshCallback(void){
   }
   
    // Leds Kitt
-  if(leds1Mode == LED1_INTERRUPT_MODE_KITT && abs(currentTime-lastKittTime) > LED1_KITT_MILLIS && LED1_KITT_LEN < DEFAULT_LED_ARRAY_SIZE){
+  if(leds1Mode == LED1_INTERRUPT_MODE_KITT && abs(currentTime-lastKittTime) > LED1_KITT_MILLIS && LED1_KITT_LEN < DEFAULT_LED1_ARRAY_SIZE){
     lastKittTime = currentTime;
     
     if(ledsKittState <= -3 && ledsKittDirection == -1){
       ledsKittDirection = 1;
-    } else if(ledsKittState >= (DEFAULT_LED_ARRAY_SIZE + LED1_KITT_LEN) && ledsKittDirection == 1) {
+    } else if(ledsKittState >= (DEFAULT_LED1_ARRAY_SIZE + LED1_KITT_LEN) && ledsKittDirection == 1) {
       ledsKittDirection = -1;      
     }
     
-    loadLedKittArray(DEFAULT_LED_ARRAY_SIZE, ledsKittState, ledsKittDirection);
+    loadLedKittArray(DEFAULT_LED1_ARRAY_SIZE, ledsKittState, ledsKittDirection);
     ledsKittState = ledsKittState + ledsKittDirection;
     
     processedLeds1 = 1;
@@ -876,61 +884,63 @@ void refreshCallback(void){
   ////////////
   // Leds 2
   ////////////
- 
-  // Flags 
-  if(leds2FlagMode != lastLeds2FlagMode || (leds2FlagMode != LED2_INTERRUPT_FLAG_NONE && abs(currentTime-lastBlinkTime2) > DEFAULT_LED2_BLINK_MILLIS)) {
-    lastBlinkTime2 = currentTime;
-    
-    loadLedFlagMode(leds2FlagMode, ledsBlinkState2);
 
-    if(ledsBlinkState2 == 0) {
-      ledsBlinkState2 = 1;
-    } else {
-      ledsBlinkState2 = 0;    
+  // Flags 
+  if(leds2FlagMode != lastLeds2FlagMode || 
+    (leds2FlagMode != LED2_INTERRUPT_FLAG_NONE)) {
+      
+    if(abs(currentTime-lastBlinkTime2) > DEFAULT_LED2_BLINK_MILLIS){
+      lastBlinkTime2 = currentTime;
+      loadLedFlagMode(leds2FlagMode, ledsBlinkState2);
+      ledsBlinkState2 = flipBlinkState(ledsBlinkState2);
     }
 
     lastLeds2FlagMode = leds2FlagMode;
+    lastLed2Mode      = byte(BINARY_CMD_FLAG);
+    processedLeds2    = 1;   
   }
 
-  if(leds2FlagMode != LED2_INTERRUPT_FLAG_NONE) {
-    processedLeds2 = 1;   
+  // Pit Limit
+  if(processedLeds2 == 0 && 
+    (leds2PitLimMode != lastLeds2PitLimMode || (leds2PitLimMode != 0 && lastLed2Mode != byte(BINARY_CMD_PITLIM)))) {
+      
+    if(abs(currentTime-lastBlinkTime2) > DEFAULT_LED2_BLINK_MILLIS) {
+      lastBlinkTime2 = currentTime;
+      loadLedPitLimiterMode(leds2PitLimMode, ledsBlinkState2);
+      ledsBlinkState2  = flipBlinkState(ledsBlinkState2);
+    }
+    
+    lastLeds2PitLimMode = leds2PitLimMode;
+    lastLed2Mode        = byte(BINARY_CMD_PITLIM);
+    processedLeds2      = 1;
   }
   
-  // Pit Limit
-  if(processedLeds2 == 0) {    
-    if((leds2PitLimMode == 0 && leds2PitLimMode != lastLeds2PitLimMode) || (leds2PitLimMode == 1 && abs(currentTime-lastBlinkTime2) > DEFAULT_LED2_BLINK_MILLIS)) {
-      lastBlinkTime2 = currentTime;
-      
-      loadLedPitLimiterMode(leds2PitLimMode, ledsBlinkState2);
-      if(ledsBlinkState2 >= 1) {
-        ledsBlinkState2 = 0;
-      } else {
-         ledsBlinkState2 = ledsBlinkState2 + 1;    
-      }
-      
-      lastLeds2PitLimMode = leds2PitLimMode;
-    }
-
-    processedLeds2 = 1;
-  }
   
   // Boost
-  if(processedLeds2 == 0 && leds2BoostMode != lastLeds2BoostMode) {
+  if(processedLeds2 == 0 && 
+    (leds2BoostMode != lastLeds2BoostMode || (leds2BoostMode != 0 && lastLed2Mode != byte(BINARY_CMD_BOOST)))) {
+      
     loadBoostMode(leds2BoostMode);
+    
     lastLeds2BoostMode = leds2BoostMode;
-    processedLeds2 = 1;
+    lastLed2Mode       = byte(BINARY_CMD_BOOST);
+    processedLeds2     = 1;
   }
   
   // DRS
-  if(processedLeds2 == 0 && leds2DRSMode != lastLeds2DRSMode) {
+  if(processedLeds2 == 0 && 
+    (leds2DRSMode != lastLeds2DRSMode || (leds2DRSMode != 0 && lastLed2Mode != byte(BINARY_CMD_DRS)))) {
+      
     loadDRSMode(leds2DRSMode);
+    
     lastLeds2DRSMode = leds2DRSMode;
-    processedLeds2 = 1;
+    lastLed2Mode     = byte(BINARY_CMD_DRS);
+    processedLeds2   = 1;
   }
   
   if(processedLeds1 == 1) {
     //cli();
-    leds.show();
+    leds1.show();
     //sei();
   }
   

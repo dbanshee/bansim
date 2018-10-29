@@ -110,18 +110,9 @@ int refreshLEDBar(simCtrlContext* ctx) {
             kittOn = 0;
         }
 
-        // Acceso sucio directo por estructuras. TODO: acceso getters
-        // Aparentemente solo funciona el flag del limitador del pitlane !!!
-        //unsigned int engineActive   = (ctx->simSrcCtx->pCarsSourceCtx->pCarsSHM->mCarFlags & (1<<1)) >> 1;
-
-
-        //        float throttle      = ctx->simSrcCtx->pCarsSourceCtx.pCarsSHM->mThrottle;
         float throttle = getThrottle(ctx->simSrcCtx);
-        //        int nGear           = ctx->simSrcCtx->pCarsSourceCtx.pCarsSHM->mGear;
         int nGear = getGear(ctx->simSrcCtx);
-        //        int rpms            = ctx->simSrcCtx->pCarsSourceCtx.pCarsSHM->mRpm;
         int rpms = getRpm(ctx->simSrcCtx);
-        //        int maxRpms         = ctx->simSrcCtx->pCarsSourceCtx.pCarsSHM->mMaxRPM/**LED_RPM_CHANGE_RATIO*/;
         int maxRpms = getMaxRpms(ctx->simSrcCtx) * LED_RPM_MAX_RATIO;
         double ledsThres = maxRpms*LED_RPM_START_RATIO;
         double ledLen = (maxRpms - ledsThres) / LED_RPM_NUMLEDS;
