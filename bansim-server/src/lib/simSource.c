@@ -1084,7 +1084,7 @@ float getTurboBoost(simSourceContext* ctx) {
     if (ctx->currentGame == PCARS_GAME) {
         return 0;
     } else if (ctx->currentGame == ASSETTO_GAME) {
-        return ctx->assettoSourceCtx.acCtx->shmPhysics->turboBoost;
+        return ctx->assettoSourceCtx.acCtx->shmPhysics->kersInput;
     } else {
         return -1;
     }

@@ -226,7 +226,7 @@ int refreshLED2Bar(simCtrlContext* ctx) {
     if (gameState == GAME_INGAME_PLAYING) {
         int pitLimit = getPitLimiter(ctx->simSrcCtx);
         int flag = getFlagStatus(ctx->simSrcCtx);
-        int boost = getTurboBoost(ctx->simSrcCtx);
+        int boost = (getTurboBoost(ctx->simSrcCtx) == 1) ? 1 : 0;
         int drs = getDRS(ctx->simSrcCtx);
 
         if (lastFlag != flag) {

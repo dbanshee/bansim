@@ -150,7 +150,7 @@ uint8_t inputMode = INPUT_MODE_BINARY;
 // Array para la lectura de comandos ASCII
 char    cmd[16];
 uint8_t cmdlen = 0;
-uint8_t echo   = 1;
+uint8_t echo   = 0;
 
 /* 
  * Main Setup
@@ -887,7 +887,7 @@ void refreshCallback(void){
 
   // Pit Limit
   if(processedLeds2 == 0 && 
-    (leds2PitLimMode != lastLeds2PitLimMode || (leds2PitLimMode != 0 && lastLed2Mode != byte(BINARY_CMD_PITLIM)))) {
+    (leds2PitLimMode != lastLeds2PitLimMode || (leds2PitLimMode != 0 /*&& lastLed2Mode != byte(BINARY_CMD_PITLIM)*/))) {
       
     if(abs(currentTime-lastBlinkTime2) > DEFAULT_LED2_BLINK_MILLIS) {
       lastBlinkTime2 = currentTime;
