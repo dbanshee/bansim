@@ -56,6 +56,7 @@
 #define BINARY_CMD_PITLIM             0x07
 #define BINARY_CMD_BOOST              0x08
 #define BINARY_CMD_DRS                0x09
+#define BINARY_CMD_ABS                0x0a
 
 // Timers Default periods
 #define REFRESH_TIMER_MICROSECS       1500L
@@ -77,6 +78,12 @@
 #define DEFAULT_TACHOMETER_ARRAY_PIN  5
 #define TACHOMETER_MAX_RPMS           11000
 #define TACHOMETER_PWM_DUTY           512
+
+// ABS CONFIG
+#define ABS_FR_BIT                    0
+#define ABS_FL_BIT                    1
+#define ABS_RR_BIT                    2
+#define ABS_RL_BIT                    3
 
 ///////////////////
 // Volatile Vars
@@ -122,6 +129,11 @@ volatile uint8_t lastLeds2BoostMode = 0;
 // DRS Mode
 volatile uint8_t leds2DRSMode = 0;
 volatile uint8_t lastLeds2DRSMode = 0;
+
+// ABS Mode
+volatile byte leds2ABSMode     = byte(0x00);
+volatile byte lastLeds2ABSMode = byte(0x00);
+volatile uint8_t absStatus[4]  = {0,0,0,0}; 
 
 
 ////////////////
@@ -320,6 +332,9 @@ boolean executeBinaryCommand(){
    case byte(BINARY_CMD_DRS):
       binarySetDRS();
       break;
+   case byte(BINARY_CMD_ABS):
+      binarySetABS();
+      break;
    default: 
       if(echo) Serial.println("Comando no reconocido.");
       cmdRes = true;
@@ -382,6 +397,10 @@ uint8_t cmdSet(char* v) {
   // DRS
   } else if(strncmp(v,"DRS=",4) == 0){
     setDRS(atoi(v+4));
+    
+  // ABS
+  } else if(strncmp(v,"ABS=",4) == 0){
+    setABS(atoi(v+4));
   
   // Default error
   } else {
@@ -614,6 +633,26 @@ void setDRS(uint8_t drs) {
    leds2DRSMode = drs;
 }
 
+void binarySetABS(){
+  if(Serial.available() < 1)
+    return;
+
+ byte value = Serial.read();
+  if(echo) { Serial.print("Value : "); Serial.println(value, DEC); }
+
+  setABS(value);
+}
+
+void setABS(byte abs) {
+  leds2DRSMode = abs;
+   
+  absStatus[ABS_FR_BIT] = bitRead(abs, ABS_FR_BIT);
+  absStatus[ABS_FL_BIT] = bitRead(abs, ABS_FL_BIT);
+  absStatus[ABS_RR_BIT] = bitRead(abs, ABS_RR_BIT);
+  absStatus[ABS_RL_BIT] = bitRead(abs, ABS_RL_BIT);
+}
+
+
 
 /*
  * Help Handler
@@ -638,6 +677,7 @@ uint8_t cmdHelp() {
   Serial.println("      PITLIM=<0|1>    : Set Pit Limiter");
   Serial.println("      BOOST=<0|1>     : Boost");
   Serial.println("      DRS=<0|1|2>     : DRS off/zone/on");
+  Serial.println("      ABS=<byte>      : ABS byte encoded FR|FL|RR|RL");
   return 0;
 }
 
@@ -783,6 +823,24 @@ void loadDRSMode(uint8_t drsMode){
     } 
   }
 }
+
+void loadABSMode(volatile uint8_t absMode []){
+  uint8_t i;
+  uint8_t wheelLedSize = DEFAULT_LED2_ARRAY_SIZE / 4;
+  
+  clearLed2Array();
+
+  for(i = 0; i < DEFAULT_LED2_ARRAY_SIZE; i++){   
+    if( (absMode[ABS_FR_BIT] == 1 && i >= ABS_FR_BIT*wheelLedSize && i < ABS_FR_BIT + wheelLedSize) || 
+        (absMode[ABS_RR_BIT] == 1 && i >= ABS_RR_BIT*wheelLedSize && i < ABS_RR_BIT + wheelLedSize) || 
+        (absMode[ABS_FL_BIT] == 1 && i >= ABS_FL_BIT*wheelLedSize && i < ABS_FL_BIT + wheelLedSize) || 
+        (absMode[ABS_RL_BIT] == 1 && i >= ABS_RL_BIT*wheelLedSize && i < ABS_RL_BIT + wheelLedSize)
+    ) {
+      leds2.setPixelColor(i, '\xff', '\x00', '\x00');      
+    }
+  } 
+}
+
 
 void clearLed2Array(){
   uint8_t i;  
@@ -935,6 +993,17 @@ void refreshCallback(void){
     
     lastLeds2DRSMode = leds2DRSMode;
     lastLed2Mode     = byte(BINARY_CMD_DRS);
+    processedLeds2   = 1;
+  }
+  
+  // ABS
+  if(processedLeds2 == 0 && 
+    (leds2ABSMode != lastLeds2ABSMode || (leds2DRSMode != 0x00 && lastLed2Mode != byte(BINARY_CMD_ABS)))) {
+      
+    loadABSMode(absStatus);
+    
+    lastLeds2ABSMode = leds2ABSMode;
+    lastLed2Mode     = byte(BINARY_CMD_ABS);
     processedLeds2   = 1;
   }
   
