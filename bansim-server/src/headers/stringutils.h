@@ -6,7 +6,7 @@
  */
 
 #ifndef STRINGUTILS_H
-#define	STRINGUTILS_H
+#define STRINGUTILS_H
 
 
 #include <string.h>
@@ -15,4 +15,4 @@ void cleanLine(char *line);
 char **splitLine(char *line, char *delim);
 void compactLine(char* dest, char* line);
 
-#endif	/* STRINGUTILS_H */
+#endif /* STRINGUTILS_H */

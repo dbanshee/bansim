@@ -9,18 +9,16 @@
 int LOG_LEVEL = LOG_INFO;
 //int LOG_LEVEL = LOG_TRACE;
 
-void setLogLevel(int level){
+void setLogLevel(int level) {
     LOG_LEVEL = level;
 }
 
-
-
-char *getCurrentDate(){
+char *getCurrentDate() {
     time_t t;
     time(&t);
-    
+
     char* timeStr = ctime(&t);
-    timeStr[strlen(timeStr)-1] = '\0';
+    timeStr[strlen(timeStr) - 1] = '\0';
     return timeStr;
 }
 
@@ -42,33 +40,33 @@ char *getCurrentDate(){
  * 
  * void blog(int level, char* format, ...){}
  */
-void blog(int level, char *format, ...){
+void blog(int level, char *format, ...) {
     char msg[MAXSIZEMSG];
-    
+
     va_list argptr;
     va_start(argptr, format);
     vsnprintf(msg, MAXSIZEMSG, format, argptr);
     va_end(argptr);
-    
-    if(level > LOG_LEVEL)
+
+    if (level > LOG_LEVEL)
         return;
-    
-    if(level == LOG_INFO)
+
+    if (level == LOG_INFO)
         printf("[INFO]  <%s>  %s\n", getCurrentDate(), msg);
-    else if(level == LOG_DEBUG)
+    else if (level == LOG_DEBUG)
         printf("[DEBUG] <%s>  %s\n", getCurrentDate(), msg);
-    else if(level == LOG_WARN)
+    else if (level == LOG_WARN)
         printf("[WARN]  <%s>  %s\n", getCurrentDate(), msg);
-    else if(level == LOG_TRACE)
+    else if (level == LOG_TRACE)
         printf("[TRACE]  <%s>  %s\n", getCurrentDate(), msg);
-    else if(level == LOG_ERROR){
-        if(errno == 0)
+    else if (level == LOG_ERROR) {
+        if (errno == 0)
             printf("[ERROR] <%s>  %s\n", getCurrentDate(), msg);
         else
             printf("[ERROR] <%s>  %s\n\t%s\n", getCurrentDate(), msg, strerror(errno));
-        
+
         errno = 0;
     }
-    
+
     fflush(stdout);
 }

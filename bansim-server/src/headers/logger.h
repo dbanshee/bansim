@@ -6,7 +6,7 @@
  */
 
 #ifndef LOGGER_H
-#define	LOGGER_H
+#define LOGGER_H
 
 #include <time.h>
 
@@ -19,7 +19,7 @@
 #define MAXSIZEMSG 2048
 
 char* getCurrentDate();
-void  blog(int level, char *format, ...);
+void blog(int level, char *format, ...);
 
 
-#endif	/* LOGGER_H */
+#endif /* LOGGER_H */

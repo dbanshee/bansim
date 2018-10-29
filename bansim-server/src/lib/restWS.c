@@ -27,13 +27,12 @@
 
 #define DEFAULT_CON_INFO_BUFF_LEN  1024
 
-typedef struct conInfo
-{
-  char* buff;
-  int buffSize;
-  int buffIdx;
+typedef struct conInfo {
+    char* buff;
+    int buffSize;
+    int buffIdx;
 
-  //struct MHD_PostProcessor *postsprocessor;
+    //struct MHD_PostProcessor *postsprocessor;
 } conInfo;
 
 
@@ -44,30 +43,30 @@ struct MHD_Response * getDataHandler(restWSContext* ctx, const char* upload_data
 int getFieldsResponse(restWSContext* ctx, jSonDocument* jdoc);
 int getDataResponse(restWSContext* ctx, jSonDocument* in, jSonDocument* out);
 
-void initializeConInfo(conInfo* c){
-    memset(c, 0, sizeof(conInfo));
-    
-    c->buffSize = sizeof(char)*DEFAULT_CON_INFO_BUFF_LEN;
-    c->buffIdx  = 0;
-    
+void initializeConInfo(conInfo* c) {
+    memset(c, 0, sizeof (conInfo));
+
+    c->buffSize = sizeof (char)*DEFAULT_CON_INFO_BUFF_LEN;
+    c->buffIdx = 0;
+
     c->buff = malloc(c->buffSize);
     memset(c->buff, 0, c->buffSize);
 }
 
 void freeConInfo(conInfo* c) {
-    if(c->buff != NULL)
+    if (c->buff != NULL)
         free(c->buff);
 }
 
-void addChunk(conInfo* c, const char* chunk, int chunkSize){
+void addChunk(conInfo* c, const char* chunk, int chunkSize) {
     int newSize;
-    
-    if((c->buffSize-c->buffIdx) <= chunkSize){
-        newSize     = c->buffSize+chunkSize+DEFAULT_CON_INFO_BUFF_LEN;
-        c->buff     = realloc(c->buff, newSize);
+
+    if ((c->buffSize - c->buffIdx) <= chunkSize) {
+        newSize = c->buffSize + chunkSize + DEFAULT_CON_INFO_BUFF_LEN;
+        c->buff = realloc(c->buff, newSize);
         c->buffSize = newSize;
     }
-    
+
     memcpy(&c->buff[c->buffIdx], chunk, chunkSize);
     c->buffIdx += chunkSize;
     c->buff[c->buffIdx] = '\0';
@@ -77,44 +76,42 @@ static int sendPage(struct MHD_Connection *connection, const char *page) {
     int ret;
     struct MHD_Response *response;
 
-    response = MHD_create_response_from_buffer (strlen (page), (void *) page, MHD_RESPMEM_PERSISTENT);
-    
-    MHD_add_response_header (response, "Content-Type", "application/json");
-    
+    response = MHD_create_response_from_buffer(strlen(page), (void *) page, MHD_RESPMEM_PERSISTENT);
+
+    MHD_add_response_header(response, "Content-Type", "application/json");
+
     if (!response)
         return MHD_NO;
 
-    ret = MHD_queue_response (connection, MHD_HTTP_OK, response);
-    MHD_destroy_response (response);
+    ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
+    MHD_destroy_response(response);
 
     return ret;
 }
 
+static int requestHandler(void * ctx,
+        struct MHD_Connection * connection,
+        const char * url,
+        const char * method,
+        const char * version,
+        const char * upload_data,
+        size_t * upload_data_size,
+        void ** con_cls) {
 
-
-static int requestHandler  (void * ctx,
-                            struct MHD_Connection * connection,
-                            const char * url,
-                            const char * method,
-                            const char * version,
-                            const char * upload_data,
-                            size_t * upload_data_size,
-                            void ** con_cls) {
-    
     jSonDocument jDocOut, jDocIn;
     int response;
     restWSContext* restWS = ctx;
 
-    if (*con_cls == NULL){
-        
+    if (*con_cls == NULL) {
+
         // Inicializacion de estructura para recivir el cuerpo de la peticion
         conInfo * cInfo;
-        
-        if((cInfo = malloc (sizeof (struct conInfo))) == NULL)
+
+        if ((cInfo = malloc(sizeof (struct conInfo))) == NULL)
             return MHD_NO;
-        
+
         initializeConInfo(cInfo);
-        
+
         /* 
          * Manera correcta de procesar los chunks de una peticion POST
          * Falla al crear un processor con datos JSON
@@ -130,142 +127,137 @@ static int requestHandler  (void * ctx,
                     return MHD_NO;
                 }
             }
-        */
+         */
 
         *con_cls = (void *) cInfo;
         return MHD_YES;
     }
-    
-    
-    if (strcmp (method, GET_STRING) == 0 && strcmp(url, GET_FIELDS_SERVICE_URL) == 0){
-        
+
+
+    if (strcmp(method, GET_STRING) == 0 && strcmp(url, GET_FIELDS_SERVICE_URL) == 0) {
+
         initializeJSonDocument(&jDocOut);
-        if(getFieldsResponse(restWS, &jDocOut) == -1){
+        if (getFieldsResponse(restWS, &jDocOut) == -1) {
             blog(LOG_ERROR, "Error procesing RestWS getfields Response");
             freeJSonDocument(&jDocOut);
             return MHD_NO;
         }
-        
+
         response = sendPage(connection, getJSonString(&jDocOut));
         freeJSonDocument(&jDocOut);
-        
-    } else if(strcmp (method, POST_STRING) == 0 && strcmp(url, GET_DATA_SERVICE_URL) == 0){
+
+    } else if (strcmp(method, POST_STRING) == 0 && strcmp(url, GET_DATA_SERVICE_URL) == 0) {
 
         conInfo* con_info = *con_cls;
 
-        if (*upload_data_size != 0){
-            
+        if (*upload_data_size != 0) {
+
             addChunk(con_info, upload_data, *upload_data_size);
-            
+
             /* HARD DEBUG
                 printf(">>>>>>  Received chunk(%d), >%s<\n", *upload_data_size, upload_data);
                 printf(">>>>>>> buff(%d, %d) : >%s<\n", con_info->buffIdx, con_info->buffSize, con_info->buff);
-            */
+             */
             *upload_data_size = 0;
-            return MHD_YES;    
-        }
-        else{
-            
+            return MHD_YES;
+        } else {
+
             /* HARD DEBUG
                 printf(">>>>>>  Received final chunk(%d), >%s<\n", *upload_data_size, upload_data);
                 printf(">>>>>>> buff(%d, %d) : >'%s'<\n", con_info->buffIdx, con_info->buffSize, con_info->buff);
-            */
-            
+             */
+
             // Request completa, generar salida
             initializeJSonDocument(&jDocIn);
             parseJSon(&jDocIn, con_info->buff);
             freeConInfo(con_info);
-         
+
             initializeJSonDocument(&jDocOut);
-            if(getDataResponse(restWS, &jDocIn, &jDocOut) == -1){
+            if (getDataResponse(restWS, &jDocIn, &jDocOut) == -1) {
                 blog(LOG_ERROR, "Error procesing RestWS getdata Response");
                 freeJSonDocument(&jDocOut);
                 return MHD_NO;
             }
-            
+
             //response = send_page(connection, errorpage);
             response = sendPage(connection, getJSonString(&jDocOut));
             freeJSonDocument(&jDocOut);
-        }   
-    }
-    else{
+        }
+    } else {
         response = sendPage(connection, JSON_ERROR_RESPONSE);
     }
-    
+
     *con_cls = NULL;
     return response;
 }
 
-
-void loadDefaultRestWSContext(restWSContext* ctx){
-    memset(ctx, 0, sizeof(restWSContext));
+void loadDefaultRestWSContext(restWSContext* ctx) {
+    memset(ctx, 0, sizeof (restWSContext));
 }
 
-void setRestWSPort(restWSContext* ctx, int port){
+void setRestWSPort(restWSContext* ctx, int port) {
     ctx->port = port;
 }
 
-void setRestWSSource(restWSContext* ctx, simSourceContext* simSrcCtx){
+void setRestWSSource(restWSContext* ctx, simSourceContext* simSrcCtx) {
     ctx->simSrcCtx = simSrcCtx;
 }
 
+int initializeRestWSContext(restWSContext* ctx) {
 
-int initializeRestWSContext(restWSContext* ctx){
-    
-    if((ctx->httpdCtx = MHD_start_daemon(   MHD_USE_THREAD_PER_CONNECTION,
-                                            ctx->port,
-                                            NULL,
-                                            NULL,
-                                            &requestHandler,
-                                            ctx,
-                                            MHD_OPTION_END)) == NULL){
+    if ((ctx->httpdCtx = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION,
+            ctx->port,
+            NULL,
+            NULL,
+            &requestHandler,
+            ctx,
+            MHD_OPTION_END)) == NULL) {
         blog(LOG_ERROR, "Error inicializando RESTWS en puerto %d", ctx->port);
         return -1;
     }
-    
+
     return 0;
 }
 
-void freeRestWSContext(restWSContext* ctx){
-    if(ctx->httpdCtx != NULL){
+void freeRestWSContext(restWSContext* ctx) {
+    if (ctx->httpdCtx != NULL) {
         blog(LOG_INFO, "Deteniendo servidor REST.");
         MHD_stop_daemon(ctx->httpdCtx);
     }
 }
 
+int getFieldsResponse(restWSContext* ctx, jSonDocument* jdoc) {
 
-int getFieldsResponse(restWSContext* ctx, jSonDocument* jdoc){
-    
-    if(getSimSourceFields(jdoc) == -1)
+    if (getSimSourceFields(jdoc) == -1)
         return -1;
-    
+
     return 0;
 }
 
-int getDataResponse(restWSContext* ctx, jSonDocument* in, jSonDocument* out){
+int getDataResponse(restWSContext* ctx, jSonDocument* in, jSonDocument* out) {
     int i, idx, nFields;
     const char* fieldName;
-    int dataFields[END_PCARS_FIELDS-1];
-    
-    if((nFields = getArraySize(in, "fields")) == -1){
+    int dataFields[END_PCARS_FIELDS - 1];
+
+    if ((nFields = getArraySize(in, "fields")) == -1) {
         blog(LOG_ERROR, "Request getdata has no 'fields' array");
         return -1;
     }
-    
-    memset(dataFields, 0, sizeof(int)*(END_PCARS_FIELDS-1));
-    for(i = 0; i < nFields; i++){
+
+    memset(dataFields, 0, sizeof (int)*(END_PCARS_FIELDS - 1));
+    for (i = 0; i < nFields; i++) {
         fieldName = getArrayStringElem(in, "fields", i);
-        
-        if((idx = enumPCarsFieldsFromString(fieldName)) == -1){
+
+        if ((idx = enumPCarsFieldsFromString(fieldName)) == -1) {
             blog(LOG_WARN, "RestWS getdata unkown field : '%s'. Ignoring", fieldName);
-        }else{
+        } else {
             dataFields[idx] = 1;
         }
     }
-    
-    if(getPCarsData(ctx->simSrcCtx, dataFields, out) == -1)
+
+    if (getPCarsData(ctx->simSrcCtx, dataFields, out) == -1)
         return -1;
-    
+
     return 0;
 }
 

@@ -6,7 +6,7 @@
  */
 
 #ifndef SIMSOURCE_H
-#define	SIMSOURCE_H
+#define SIMSOURCE_H
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -19,7 +19,7 @@
 enum SIMS {
     PCARS_GAME,
     ASSETTO_GAME,
-    IRACING_GAME 
+    IRACING_GAME
 } SIMS;
 
 typedef struct dataExtension {
@@ -27,16 +27,15 @@ typedef struct dataExtension {
     float updatedLastBestLapTime;
 } dataExtension;
 
-
 typedef struct pCarsSourceContext {
-    SharedMemory*           pCarsSHM;
-    pCarsContext*           pCarsCtx;
+    SharedMemory* pCarsSHM;
+    pCarsContext* pCarsCtx;
     pCarsDumpReaderContext* pCarsDumpCtx;
     //dataExtension           dataExt;
 } pCarsSourceContext;
 
 typedef struct assetoSourceContext {
-    aCContext*              acCtx;
+    aCContext* acCtx;
 } assetoSourceContext;
 
 typedef struct iRacingSourceContext {
@@ -44,23 +43,22 @@ typedef struct iRacingSourceContext {
 } iRacingSourceContext;
 
 typedef struct simSourceContext {
-    int                     currentGame;
-    dataExtension           dataExt;
-    
+    int currentGame;
+    dataExtension dataExt;
+
     // Games contexts
-    pCarsSourceContext      pCarsSourceCtx;
-    assetoSourceContext     assettoSourceCtx;
-    iRacingSourceContext    iRacingSourceCtx;
+    pCarsSourceContext pCarsSourceCtx;
+    assetoSourceContext assettoSourceCtx;
+    iRacingSourceContext iRacingSourceCtx;
 } simSourceContext;
 
-
 typedef struct jSonData {
-    int*  fields;
+    int* fields;
     char* jSonResult;
 } jSonData;
 
 void loadDefaultSimSourceContext(simSourceContext* ctx);
-int  initializeSimSourceContext(simSourceContext* ctx);
+int initializeSimSourceContext(simSourceContext* ctx);
 void freeSimSourceContext(simSourceContext* ctx);
 int getSimSourceFields(jSonDocument* jSonDoc);
 
@@ -82,9 +80,8 @@ void setSimSourceACAPI(simSourceContext* ctx, aCContext* aCCtx);
 ////////////
 // Fields
 ////////////
-enum PCARS_FIELDS { 
 
-    MVERSION, 
+enum PCARS_FIELDS {     MVERSION,
     MBUILDVERSIONNUMBER,
     MGAMESTATE,
     MSESSIONSTATE,
@@ -93,7 +90,7 @@ enum PCARS_FIELDS {
     MNUMPARTICIPANTS,
     MPARTICIPANTINFO,
     MUNFILTEREDTHROTTLE,
-    MUNFILTEREDBRAKE ,
+    MUNFILTEREDBRAKE,
     MUNFILTEREDSTEERING,
     MUNFILTEREDCLUTCH,
     MCARNAME,
@@ -135,7 +132,7 @@ enum PCARS_FIELDS {
     MWATERPRESSUREKPA,
     MFUELPRESSUREKPA,
     MFUELLEVEL,
-    MFUELCAPACITY ,
+    MFUELCAPACITY,
     MSPEED,
     MRPM,
     MMAXRPM,
@@ -147,8 +144,8 @@ enum PCARS_FIELDS {
     MNUMGEARS,
     MODOMETERKM,
     MANTILOCKACTIVE,
-    MLASTOPPONENTCOLLISIONINDEX ,
-    MLASTOPPONENTCOLLISIONMAGNITUDE ,
+    MLASTOPPONENTCOLLISIONINDEX,
+    MLASTOPPONENTCOLLISIONMAGNITUDE,
     MBOOSTACTIVE,
     MBOOSTAMOUNT,
     MORIENTATION,
@@ -195,7 +192,7 @@ enum PCARS_FIELDS {
     END_PCARS_FIELDS
 } PCARS_FIELDS;
 
-int   enumPCarsFieldsFromString(const char *s);
+int enumPCarsFieldsFromString(const char *s);
 char* enumPCarsFieldsToString(int e);
 
 
@@ -210,5 +207,5 @@ int getFlagStatus(simSourceContext* ctx);
 float getTurboBoost(simSourceContext* ctx);
 int getDRS(simSourceContext* ctx);
 
-#endif	/* SIMSOURCE_H */
+#endif /* SIMSOURCE_H */
 

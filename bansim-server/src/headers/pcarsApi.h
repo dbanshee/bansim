@@ -11,19 +11,18 @@
 
 
 #ifndef PCARSAPI_H
-#define	PCARSAPI_H
+#define PCARSAPI_H
 
 #define PCARS_SHAREDMEM_FILE "$pcars$"
 
-
 typedef struct pCarsContext {
-    HANDLE          hFileHandle;
-    SharedMemory*   shmMem;
+    HANDLE hFileHandle;
+    SharedMemory* shmMem;
 } pCarsContext;
 
 void loadDefaultPCarsContext(pCarsContext* pContext);
-int  initializePCarsContext(pCarsContext* pContext);
+int initializePCarsContext(pCarsContext* pContext);
 void freePCarsContext(pCarsContext* pContext);
-        
-#endif	/* PCARSAPI_H */
+
+#endif /* PCARSAPI_H */
 

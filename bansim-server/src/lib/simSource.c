@@ -3,60 +3,60 @@
 
 #include "../headers/simSource.h"
 
-void loadDefaultSimSourceContext(simSourceContext* ctx){
-    memset(ctx, 0, sizeof(simSourceContext));
+void loadDefaultSimSourceContext(simSourceContext* ctx) {
+    memset(ctx, 0, sizeof (simSourceContext));
 }
 
-void setSimSourcePCarsAPI(simSourceContext* ctx, pCarsContext* pCarsCtx){
+void setSimSourcePCarsAPI(simSourceContext* ctx, pCarsContext* pCarsCtx) {
     ctx->currentGame = PCARS_GAME;
     ctx->pCarsSourceCtx.pCarsCtx = pCarsCtx;
 }
 
-void setSimSourceACAPI(simSourceContext* ctx, aCContext* aCCtx){
+void setSimSourceACAPI(simSourceContext* ctx, aCContext* aCCtx) {
     ctx->currentGame = ASSETTO_GAME;
     ctx->assettoSourceCtx.acCtx = aCCtx;
 }
 
-void setSimSourcePCarsDump(simSourceContext* ctx, pCarsDumpReaderContext* pCarsDumpCtx){
+void setSimSourcePCarsDump(simSourceContext* ctx, pCarsDumpReaderContext* pCarsDumpCtx) {
     ctx->currentGame = PCARS_GAME;
     ctx->pCarsSourceCtx.pCarsDumpCtx = pCarsDumpCtx;
 }
 
-int initializeSimSourceContext(simSourceContext* ctx){
-    
+int initializeSimSourceContext(simSourceContext* ctx) {
+
     //TODO: Check and return errors
-    if(ctx->currentGame == PCARS_GAME){
-        ctx->dataExt.lastBestLapTime        = -1;
+    if (ctx->currentGame == PCARS_GAME) {
+        ctx->dataExt.lastBestLapTime = -1;
         ctx->dataExt.updatedLastBestLapTime = 0;
-        
-        if(ctx->pCarsSourceCtx.pCarsDumpCtx != NULL){
+
+        if (ctx->pCarsSourceCtx.pCarsDumpCtx != NULL) {
             ctx->pCarsSourceCtx.pCarsSHM = &ctx->pCarsSourceCtx.pCarsDumpCtx->pCarsSHM;
             return 0;
         }
 
-        if(ctx->pCarsSourceCtx.pCarsCtx != NULL){
+        if (ctx->pCarsSourceCtx.pCarsCtx != NULL) {
             ctx->pCarsSourceCtx.pCarsSHM = ctx->pCarsSourceCtx.pCarsCtx->shmMem;
             return 0;
         }
     } else if (ctx->currentGame == ASSETTO_GAME) {
-        ctx->dataExt.lastBestLapTime        = -1;
+        ctx->dataExt.lastBestLapTime = -1;
         ctx->dataExt.updatedLastBestLapTime = 0;
         return 0;
     }
-    
+
     return -1;
 }
 
-void freeSimSourceContext(simSourceContext* ctx){
+void freeSimSourceContext(simSourceContext* ctx) {
     // Nothing to do
 }
 
-int getSimSourceFields(jSonDocument* jSonDoc){
+int getSimSourceFields(jSonDocument* jSonDoc) {
     int i;
     initializeJSonDocument(jSonDoc);
-    
+
     openJSonArray(jSonDoc, "fields");
-    for(i = 0; i < END_PCARS_FIELDS; i++){
+    for (i = 0; i < END_PCARS_FIELDS; i++) {
         addJSonArrayString(jSonDoc, enumPCarsFieldsToString(i));
     }
     closeJSonArray(jSonDoc);
@@ -64,57 +64,57 @@ int getSimSourceFields(jSonDocument* jSonDoc){
     return 0;
 }
 
-void addSimpleStringValue(jSonDocument* doc, char* fieldName, char* value){
+void addSimpleStringValue(jSonDocument* doc, char* fieldName, char* value) {
     addJSonStringField(doc, fieldName, value);
 }
 
-void addSimpleIntegerValue(jSonDocument* doc, char* fieldName, int value){
+void addSimpleIntegerValue(jSonDocument* doc, char* fieldName, int value) {
     addJSonIntegerField(doc, fieldName, value);
 }
 
-void addSimpleFloatValue(jSonDocument* doc, char* fieldName, float value){
+void addSimpleFloatValue(jSonDocument* doc, char* fieldName, float value) {
     addJSonFloatField(doc, fieldName, value);
 }
 
-void addSimpleBoolValue(jSonDocument* doc, char* fieldName, bool value){
+void addSimpleBoolValue(jSonDocument* doc, char* fieldName, bool value) {
     addJSonBoolField(doc, fieldName, value);
 }
 
-void addArrayString(jSonDocument* doc, char* fieldName, char** arr, int dim){
+void addArrayString(jSonDocument* doc, char* fieldName, char** arr, int dim) {
     int i;
-    
+
     openJSonArray(doc, fieldName);
-    for(i = 0; i < dim; i++){
+    for (i = 0; i < dim; i++) {
         addJSonArrayString(doc, arr[i]);
     }
     closeJSonArray(doc);
 }
 
-void addArrayInteger(jSonDocument* doc, char* fieldName, int* arr, int dim){
+void addArrayInteger(jSonDocument* doc, char* fieldName, int* arr, int dim) {
     int i;
-    
+
     openJSonArray(doc, fieldName);
-    for(i = 0; i < dim; i++){
+    for (i = 0; i < dim; i++) {
         addJSonArrayInteger(doc, arr[i]);
     }
     closeJSonArray(doc);
 }
 
-void addArrayFloat(jSonDocument* doc, char* fieldName, float* arr, int dim){
+void addArrayFloat(jSonDocument* doc, char* fieldName, float* arr, int dim) {
     int i;
-    
+
     openJSonArray(doc, fieldName);
-    for(i = 0; i < dim; i++){
+    for (i = 0; i < dim; i++) {
         addJSonArrayFloat(doc, arr[i]);
     }
     closeJSonArray(doc);
 }
 
-void addArrayBoolean(jSonDocument* doc, char* fieldName, bool* arr, int dim){
+void addArrayBoolean(jSonDocument* doc, char* fieldName, bool* arr, int dim) {
     int i;
-    
+
     openJSonArray(doc, fieldName);
-    for(i = 0; i < dim; i++){
+    for (i = 0; i < dim; i++) {
         addJSonArrayBool(doc, arr[i]);
     }
     closeJSonArray(doc);
@@ -189,8 +189,8 @@ void addArrayBoolean(jSonDocument* doc, char* fieldName, bool* arr, int dim){
 //    sprintf(buff, "%d/%d", ctx->pCarsSHM->mViewedParticipantIndex+1, ctx->pCarsSHM->mNumParticipants);
 //}
 
-char* getExtMPCrashState(pCarsSourceContext* ctx){
-    switch(ctx->pCarsSHM->mCrashState){
+char* getExtMPCrashState(pCarsSourceContext* ctx) {
+    switch (ctx->pCarsSHM->mCrashState) {
         case CRASH_DAMAGE_NONE:
             return "NONE";
         case CRASH_DAMAGE_OFFTRACK:
@@ -205,17 +205,18 @@ char* getExtMPCrashState(pCarsSourceContext* ctx){
             return "-";
     }
 }
-int getPCarsData(simSourceContext* ctx, int* fieldsArray, jSonDocument* out){
+
+int getPCarsData(simSourceContext* ctx, int* fieldsArray, jSonDocument* out) {
     int i;
     float res[4];
     char buff[1024];
-    
+
     openJSonObject(out, "data");
-    
-    for(i = 0; i < END_PCARS_FIELDS; i++){
-        if(fieldsArray[i] == 1){
-            switch (i){
-                case MVERSION: 
+
+    for (i = 0; i < END_PCARS_FIELDS; i++) {
+        if (fieldsArray[i] == 1) {
+            switch (i) {
+                case MVERSION:
                     addSimpleIntegerValue(out, enumPCarsFieldsToString(i), ctx->pCarsSourceCtx.pCarsSHM->mVersion);
                     break;
                 case MBUILDVERSIONNUMBER:
@@ -236,12 +237,12 @@ int getPCarsData(simSourceContext* ctx, int* fieldsArray, jSonDocument* out){
                 case MNUMPARTICIPANTS:
                     addSimpleIntegerValue(out, enumPCarsFieldsToString(i), ctx->pCarsSourceCtx.pCarsSHM->mNumParticipants);
                     break;
-    //            case MPARTICIPANTINFO:
-    //                    return "MPARTICIPANTINFO";
+                    //            case MPARTICIPANTINFO:
+                    //                    return "MPARTICIPANTINFO";
                 case MUNFILTEREDTHROTTLE:
                     addSimpleFloatValue(out, enumPCarsFieldsToString(i), ctx->pCarsSourceCtx.pCarsSHM->mUnfilteredThrottle);
                     break;
-                case MUNFILTEREDBRAKE :
+                case MUNFILTEREDBRAKE:
                     addSimpleFloatValue(out, enumPCarsFieldsToString(i), ctx->pCarsSourceCtx.pCarsSHM->mUnfilteredBrake);
                     break;
                 case MUNFILTEREDSTEERING:
@@ -367,7 +368,7 @@ int getPCarsData(simSourceContext* ctx, int* fieldsArray, jSonDocument* out){
                 case MFUELLEVEL:
                     addSimpleFloatValue(out, enumPCarsFieldsToString(i), ctx->pCarsSourceCtx.pCarsSHM->mFuelLevel);
                     break;
-                case MFUELCAPACITY :
+                case MFUELCAPACITY:
                     addSimpleFloatValue(out, enumPCarsFieldsToString(i), ctx->pCarsSourceCtx.pCarsSHM->mFuelCapacity);
                     break;
                 case MSPEED:
@@ -403,10 +404,10 @@ int getPCarsData(simSourceContext* ctx, int* fieldsArray, jSonDocument* out){
                 case MANTILOCKACTIVE:
                     addSimpleBoolValue(out, enumPCarsFieldsToString(i), ctx->pCarsSourceCtx.pCarsSHM->mAntiLockActive);
                     break;
-                case MLASTOPPONENTCOLLISIONINDEX :
+                case MLASTOPPONENTCOLLISIONINDEX:
                     addSimpleIntegerValue(out, enumPCarsFieldsToString(i), ctx->pCarsSourceCtx.pCarsSHM->mLastOpponentCollisionIndex);
                     break;
-                case MLASTOPPONENTCOLLISIONMAGNITUDE :
+                case MLASTOPPONENTCOLLISIONMAGNITUDE:
                     addSimpleFloatValue(out, enumPCarsFieldsToString(i), ctx->pCarsSourceCtx.pCarsSHM->mLastOpponentCollisionMagnitude);
                     break;
                 case MBOOSTACTIVE:
@@ -520,502 +521,499 @@ int getPCarsData(simSourceContext* ctx, int* fieldsArray, jSonDocument* out){
                 case MCLOUDBRIGHTNESS:
                     addSimpleFloatValue(out, enumPCarsFieldsToString(i), ctx->pCarsSourceCtx.pCarsSHM->mCloudBrightness);
                     break;
-//                case EXT_MSESSIONSECTORGAP:
-//                    getExtMSessionSectorGap(ctx, res);
-//                    addArrayFloat(out, enumPCarsFieldsToString(i), res, 3 /*NUM SECTORS*/);
-//                    break;
-//                case EXT_MSESSIONSECTORDELTA:
-//                    addSimpleFloatValue(out, enumPCarsFieldsToString(i), getExtMSessionDelta(ctx));
-//                    break;                    
-//                case EXT_MCURRENTTIME:
-//                    getExtMCurrentTime(ctx, res);
-//                    addArrayFloat(out, enumPCarsFieldsToString(i), res, 2 /*NUM SECTORS*/);
-//                    break;
-//                case EXT_MLASTLAPTIME:
-//                    getExtMLastTime(ctx, res);
-//                    addArrayFloat(out, enumPCarsFieldsToString(i), res, 2 /*NUM SECTORS*/);
-//                    break;
-//                case EXT_MPOSITION:
-//                    getExtMPosition(ctx, buff);
-//                    addSimpleStringValue(out, enumPCarsFieldsToString(i), buff);
-//                    break;
-//                case EXT_MCRASHSTATE:
-//                    addSimpleStringValue(out, enumPCarsFieldsToString(i), getExtMPCrashState(ctx));
-//                    break;
+                    //                case EXT_MSESSIONSECTORGAP:
+                    //                    getExtMSessionSectorGap(ctx, res);
+                    //                    addArrayFloat(out, enumPCarsFieldsToString(i), res, 3 /*NUM SECTORS*/);
+                    //                    break;
+                    //                case EXT_MSESSIONSECTORDELTA:
+                    //                    addSimpleFloatValue(out, enumPCarsFieldsToString(i), getExtMSessionDelta(ctx));
+                    //                    break;                    
+                    //                case EXT_MCURRENTTIME:
+                    //                    getExtMCurrentTime(ctx, res);
+                    //                    addArrayFloat(out, enumPCarsFieldsToString(i), res, 2 /*NUM SECTORS*/);
+                    //                    break;
+                    //                case EXT_MLASTLAPTIME:
+                    //                    getExtMLastTime(ctx, res);
+                    //                    addArrayFloat(out, enumPCarsFieldsToString(i), res, 2 /*NUM SECTORS*/);
+                    //                    break;
+                    //                case EXT_MPOSITION:
+                    //                    getExtMPosition(ctx, buff);
+                    //                    addSimpleStringValue(out, enumPCarsFieldsToString(i), buff);
+                    //                    break;
+                    //                case EXT_MCRASHSTATE:
+                    //                    addSimpleStringValue(out, enumPCarsFieldsToString(i), getExtMPCrashState(ctx));
+                    //                    break;
                 default:
                     addSimpleStringValue(out, enumPCarsFieldsToString(i), "NOT_AVAILABLE");
                     break;
             }
         }
     }
-    
+
     closeJSonObject(out);
 }
 
+int enumPCarsFieldsFromString(const char *s) {
 
-int enumPCarsFieldsFromString(const char *s){
-
-    if(strcmp(s, "MVERSION") == 0) 
-	return MVERSION; 
-    else if(strcmp(s, "MBUILDVERSIONNUMBER") == 0)
-            return MBUILDVERSIONNUMBER;
-    else if(strcmp(s, "MGAMESTATE") == 0)
-            return MGAMESTATE;
-    else if(strcmp(s, "MSESSIONSTATE") == 0)
-            return MSESSIONSTATE;
-    else if(strcmp(s, "MRACESTATE") == 0)
-            return MRACESTATE;
-    else if(strcmp(s, "MVIEWEDPARTICIPANTINDEX") == 0)
-            return MVIEWEDPARTICIPANTINDEX;
-    else if(strcmp(s, "MNUMPARTICIPANTS") == 0)
-            return MNUMPARTICIPANTS;
-    else if(strcmp(s, "MPARTICIPANTINFO") == 0)
-            return MPARTICIPANTINFO;
-    else if(strcmp(s, "MUNFILTEREDTHROTTLE") == 0)
-            return MUNFILTEREDTHROTTLE;
-    else if(strcmp(s, "MUNFILTEREDBRAKE ") == 0)
-            return MUNFILTEREDBRAKE ;
-    else if(strcmp(s, "MUNFILTEREDSTEERING") == 0)
-            return MUNFILTEREDSTEERING;
-    else if(strcmp(s, "MUNFILTEREDCLUTCH") == 0)
-            return MUNFILTEREDCLUTCH;
-    else if(strcmp(s, "MCARNAME") == 0)
-            return MCARNAME;
-    else if(strcmp(s, "MCARCLASSNAME") == 0)
-            return MCARCLASSNAME;
-    else if(strcmp(s, "MLAPSINEVENT") == 0)
-            return MLAPSINEVENT;
-    else if(strcmp(s, "MTRACKLOCATION") == 0)
-            return MTRACKLOCATION;
-    else if(strcmp(s, "MTRACKVARIATION") == 0)
-            return MTRACKVARIATION;
-    else if(strcmp(s, "MTRACKLENGTH") == 0)
-            return MTRACKLENGTH;
-    else if(strcmp(s, "MLAPINVALIDATED") == 0)
-            return MLAPINVALIDATED;
-    else if(strcmp(s, "MBESTLAPTIME") == 0)
-            return MBESTLAPTIME;
-    else if(strcmp(s, "MLASTLAPTIME") == 0)
-            return MLASTLAPTIME;
-    else if(strcmp(s, "MCURRENTTIME") == 0)
-            return MCURRENTTIME;
-    else if(strcmp(s, "MSPLITTIMEAHEAD") == 0)
-            return MSPLITTIMEAHEAD;
-    else if(strcmp(s, "MSPLITTIMEBEHIND") == 0)
-            return MSPLITTIMEBEHIND;
-    else if(strcmp(s, "MSPLITTIME") == 0)
-            return MSPLITTIME;
-    else if(strcmp(s, "MEVENTTIMEREMAINING") == 0)
-            return MEVENTTIMEREMAINING;
-    else if(strcmp(s, "MPERSONALFASTESTLAPTIME") == 0)
-            return MPERSONALFASTESTLAPTIME;
-    else if(strcmp(s, "MWORLDFASTESTLAPTIME") == 0)
-            return MWORLDFASTESTLAPTIME;
-    else if(strcmp(s, "MCURRENTSECTOR1TIME") == 0)
-            return MCURRENTSECTOR1TIME;
-    else if(strcmp(s, "MCURRENTSECTOR2TIME") == 0)
-            return MCURRENTSECTOR2TIME;
-    else if(strcmp(s, "MCURRENTSECTOR3TIME") == 0)
-            return MCURRENTSECTOR3TIME;
-    else if(strcmp(s, "MFASTESTSECTOR1TIME") == 0)
-            return MFASTESTSECTOR1TIME;
-    else if(strcmp(s, "MFASTESTSECTOR2TIME") == 0)
-            return MFASTESTSECTOR2TIME;
-    else if(strcmp(s, "MFASTESTSECTOR3TIME") == 0)
-            return MFASTESTSECTOR3TIME;
-    else if(strcmp(s, "MPERSONALFASTESTSECTOR1TIME") == 0)
-            return MPERSONALFASTESTSECTOR1TIME;
-    else if(strcmp(s, "MPERSONALFASTESTSECTOR2TIME") == 0)
-            return MPERSONALFASTESTSECTOR2TIME;
-    else if(strcmp(s, "MPERSONALFASTESTSECTOR3TIME") == 0)
-            return MPERSONALFASTESTSECTOR3TIME;
-    else if(strcmp(s, "MWORLDFASTESTSECTOR1TIME") == 0)
-            return MWORLDFASTESTSECTOR1TIME;
-    else if(strcmp(s, "MWORLDFASTESTSECTOR2TIME") == 0)
-            return MWORLDFASTESTSECTOR2TIME;
-    else if(strcmp(s, "MWORLDFASTESTSECTOR3TIME") == 0)
-            return MWORLDFASTESTSECTOR3TIME;
-    else if(strcmp(s, "MHIGHESTFLAGCOLOUR") == 0)
-            return MHIGHESTFLAGCOLOUR;
-    else if(strcmp(s, "MHIGHESTFLAGREASON") == 0)
-            return MHIGHESTFLAGREASON;
-    else if(strcmp(s, "MPITMODE") == 0)
-            return MPITMODE;
-    else if(strcmp(s, "MPITSCHEDULE") == 0)
-            return MPITSCHEDULE;
-    else if(strcmp(s, "MCARFLAGS") == 0)
-            return MCARFLAGS;
-    else if(strcmp(s, "MOILTEMPCELSIUS") == 0)
-            return MOILTEMPCELSIUS;
-    else if(strcmp(s, "MOILPRESSUREKPA") == 0)
-            return MOILPRESSUREKPA;
-    else if(strcmp(s, "MWATERTEMPCELSIUS") == 0)
-            return MWATERTEMPCELSIUS;
-    else if(strcmp(s, "MWATERPRESSUREKPA") == 0)
-            return MWATERPRESSUREKPA;
-    else if(strcmp(s, "MFUELPRESSUREKPA") == 0)
-            return MFUELPRESSUREKPA;
-    else if(strcmp(s, "MFUELLEVEL") == 0)
-            return MFUELLEVEL;
-    else if(strcmp(s, "MFUELCAPACITY") == 0)
-            return MFUELCAPACITY ;
-    else if(strcmp(s, "MSPEED") == 0)
-            return MSPEED;
-    else if(strcmp(s, "MRPM") == 0)
-            return MRPM;
-    else if(strcmp(s, "MMAXRPM") == 0)
-            return MMAXRPM;
-    else if(strcmp(s, "MBRAKE") == 0)
-            return MBRAKE;
-    else if(strcmp(s, "MTHROTTLE") == 0)
-            return MTHROTTLE;
-    else if(strcmp(s, "MCLUTCH") == 0)
-            return MCLUTCH;
-    else if(strcmp(s, "MSTEERING") == 0)
-            return MSTEERING;
-    else if(strcmp(s, "MGEAR") == 0)
-            return MGEAR;
-    else if(strcmp(s, "MNUMGEARS") == 0)
-            return MNUMGEARS;
-    else if(strcmp(s, "MODOMETERKM") == 0)
-            return MODOMETERKM;
-    else if(strcmp(s, "MANTILOCKACTIVE") == 0)
-            return MANTILOCKACTIVE;
-    else if(strcmp(s, "MLASTOPPONENTCOLLISIONINDEX") == 0)
-            return MLASTOPPONENTCOLLISIONINDEX ;
-    else if(strcmp(s, "MLASTOPPONENTCOLLISIONMAGNITUDE") == 0)
-            return MLASTOPPONENTCOLLISIONMAGNITUDE ;
-    else if(strcmp(s, "MBOOSTACTIVE") == 0)
-            return MBOOSTACTIVE;
-    else if(strcmp(s, "MBOOSTAMOUNT") == 0)
-            return MBOOSTAMOUNT;
-    else if(strcmp(s, "MORIENTATION") == 0)
-            return MORIENTATION;
-    else if(strcmp(s, "MLOCALVELOCITY") == 0)
-            return MLOCALVELOCITY;
-    else if(strcmp(s, "MWORLDVELOCITY") == 0)
-            return MWORLDVELOCITY;
-    else if(strcmp(s, "MANGULARVELOCITY") == 0)
-            return MANGULARVELOCITY;
-    else if(strcmp(s, "MLOCALACCELERATION") == 0)
-            return MLOCALACCELERATION;
-    else if(strcmp(s, "MWORLDACCELERATION") == 0)
-            return MWORLDACCELERATION;
-    else if(strcmp(s, "MEXTENTSCENTRE") == 0)
-            return MEXTENTSCENTRE;
-    else if(strcmp(s, "MTYREFLAGS") == 0)
-            return MTYREFLAGS;
-    else if(strcmp(s, "MTERRAIN") == 0)
-            return MTERRAIN;
-    else if(strcmp(s, "MTYREY") == 0)
-            return MTYREY;
-    else if(strcmp(s, "MTYRERPS") == 0)
-            return MTYRERPS;
-    else if(strcmp(s, "MTYRESLIPSPEED") == 0)
-            return MTYRESLIPSPEED;
-    else if(strcmp(s, "MTYRETEMP") == 0)
-            return MTYRETEMP;
-    else if(strcmp(s, "MTYREGRIP") == 0)
-            return MTYREGRIP;
-    else if(strcmp(s, "MTYREHEIGHTABOVEGROUND") == 0)
-            return MTYREHEIGHTABOVEGROUND;
-    else if(strcmp(s, "MTYRELATERALSTIFFNESS") == 0)
-            return MTYRELATERALSTIFFNESS;
-    else if(strcmp(s, "MTYREWEAR") == 0)
-            return MTYREWEAR;
-    else if(strcmp(s, "MBRAKEDAMAGE") == 0)
-            return MBRAKEDAMAGE;
-    else if(strcmp(s, "MSUSPENSIONDAMAGE") == 0)
-            return MSUSPENSIONDAMAGE;
-    else if(strcmp(s, "MBRAKETEMPCELSIUS") == 0)
-            return MBRAKETEMPCELSIUS;
-    else if(strcmp(s, "MTYRETREADTEMP") == 0)
-            return MTYRETREADTEMP;
-    else if(strcmp(s, "MTYRELAYERTEMP") == 0)
-            return MTYRELAYERTEMP;
-    else if(strcmp(s, "MTYRECARCASSTEMP") == 0)
-            return MTYRECARCASSTEMP;
-    else if(strcmp(s, "MTYRERIMTEMP") == 0)
-            return MTYRERIMTEMP;
-    else if(strcmp(s, "MTYREINTERNALAIRTEMP") == 0)
-            return MTYREINTERNALAIRTEMP;
-    else if(strcmp(s, "MCRASHSTATE") == 0)
-            return MCRASHSTATE;
-    else if(strcmp(s, "MAERODAMAGE") == 0)
-            return MAERODAMAGE;
-    else if(strcmp(s, "MENGINEDAMAGE") == 0)
-            return MENGINEDAMAGE;
-    else if(strcmp(s, "MAMBIENTTEMPERATURE") == 0)
-            return MAMBIENTTEMPERATURE;
-    else if(strcmp(s, "MTRACKTEMPERATURE") == 0)
-            return MTRACKTEMPERATURE;
-    else if(strcmp(s, "MRAINDENSITY") == 0)
-            return MRAINDENSITY;
-    else if(strcmp(s, "MWINDSPEED") == 0)
-            return MWINDSPEED;
-    else if(strcmp(s, "MWINDDIRECTIONX") == 0)
-            return MWINDDIRECTIONX;
-    else if(strcmp(s, "MWINDDIRECTIONY") == 0)
-            return MWINDDIRECTIONY;
-    else if(strcmp(s, "MCLOUDBRIGHTNESS") == 0)
-            return MCLOUDBRIGHTNESS;
-    else if(strcmp(s, "EXT_MSESSIONSECTORGAP") == 0)
+    if (strcmp(s, "MVERSION") == 0)
+        return MVERSION;
+    else if (strcmp(s, "MBUILDVERSIONNUMBER") == 0)
+        return MBUILDVERSIONNUMBER;
+    else if (strcmp(s, "MGAMESTATE") == 0)
+        return MGAMESTATE;
+    else if (strcmp(s, "MSESSIONSTATE") == 0)
+        return MSESSIONSTATE;
+    else if (strcmp(s, "MRACESTATE") == 0)
+        return MRACESTATE;
+    else if (strcmp(s, "MVIEWEDPARTICIPANTINDEX") == 0)
+        return MVIEWEDPARTICIPANTINDEX;
+    else if (strcmp(s, "MNUMPARTICIPANTS") == 0)
+        return MNUMPARTICIPANTS;
+    else if (strcmp(s, "MPARTICIPANTINFO") == 0)
+        return MPARTICIPANTINFO;
+    else if (strcmp(s, "MUNFILTEREDTHROTTLE") == 0)
+        return MUNFILTEREDTHROTTLE;
+    else if (strcmp(s, "MUNFILTEREDBRAKE ") == 0)
+        return MUNFILTEREDBRAKE;
+    else if (strcmp(s, "MUNFILTEREDSTEERING") == 0)
+        return MUNFILTEREDSTEERING;
+    else if (strcmp(s, "MUNFILTEREDCLUTCH") == 0)
+        return MUNFILTEREDCLUTCH;
+    else if (strcmp(s, "MCARNAME") == 0)
+        return MCARNAME;
+    else if (strcmp(s, "MCARCLASSNAME") == 0)
+        return MCARCLASSNAME;
+    else if (strcmp(s, "MLAPSINEVENT") == 0)
+        return MLAPSINEVENT;
+    else if (strcmp(s, "MTRACKLOCATION") == 0)
+        return MTRACKLOCATION;
+    else if (strcmp(s, "MTRACKVARIATION") == 0)
+        return MTRACKVARIATION;
+    else if (strcmp(s, "MTRACKLENGTH") == 0)
+        return MTRACKLENGTH;
+    else if (strcmp(s, "MLAPINVALIDATED") == 0)
+        return MLAPINVALIDATED;
+    else if (strcmp(s, "MBESTLAPTIME") == 0)
+        return MBESTLAPTIME;
+    else if (strcmp(s, "MLASTLAPTIME") == 0)
+        return MLASTLAPTIME;
+    else if (strcmp(s, "MCURRENTTIME") == 0)
+        return MCURRENTTIME;
+    else if (strcmp(s, "MSPLITTIMEAHEAD") == 0)
+        return MSPLITTIMEAHEAD;
+    else if (strcmp(s, "MSPLITTIMEBEHIND") == 0)
+        return MSPLITTIMEBEHIND;
+    else if (strcmp(s, "MSPLITTIME") == 0)
+        return MSPLITTIME;
+    else if (strcmp(s, "MEVENTTIMEREMAINING") == 0)
+        return MEVENTTIMEREMAINING;
+    else if (strcmp(s, "MPERSONALFASTESTLAPTIME") == 0)
+        return MPERSONALFASTESTLAPTIME;
+    else if (strcmp(s, "MWORLDFASTESTLAPTIME") == 0)
+        return MWORLDFASTESTLAPTIME;
+    else if (strcmp(s, "MCURRENTSECTOR1TIME") == 0)
+        return MCURRENTSECTOR1TIME;
+    else if (strcmp(s, "MCURRENTSECTOR2TIME") == 0)
+        return MCURRENTSECTOR2TIME;
+    else if (strcmp(s, "MCURRENTSECTOR3TIME") == 0)
+        return MCURRENTSECTOR3TIME;
+    else if (strcmp(s, "MFASTESTSECTOR1TIME") == 0)
+        return MFASTESTSECTOR1TIME;
+    else if (strcmp(s, "MFASTESTSECTOR2TIME") == 0)
+        return MFASTESTSECTOR2TIME;
+    else if (strcmp(s, "MFASTESTSECTOR3TIME") == 0)
+        return MFASTESTSECTOR3TIME;
+    else if (strcmp(s, "MPERSONALFASTESTSECTOR1TIME") == 0)
+        return MPERSONALFASTESTSECTOR1TIME;
+    else if (strcmp(s, "MPERSONALFASTESTSECTOR2TIME") == 0)
+        return MPERSONALFASTESTSECTOR2TIME;
+    else if (strcmp(s, "MPERSONALFASTESTSECTOR3TIME") == 0)
+        return MPERSONALFASTESTSECTOR3TIME;
+    else if (strcmp(s, "MWORLDFASTESTSECTOR1TIME") == 0)
+        return MWORLDFASTESTSECTOR1TIME;
+    else if (strcmp(s, "MWORLDFASTESTSECTOR2TIME") == 0)
+        return MWORLDFASTESTSECTOR2TIME;
+    else if (strcmp(s, "MWORLDFASTESTSECTOR3TIME") == 0)
+        return MWORLDFASTESTSECTOR3TIME;
+    else if (strcmp(s, "MHIGHESTFLAGCOLOUR") == 0)
+        return MHIGHESTFLAGCOLOUR;
+    else if (strcmp(s, "MHIGHESTFLAGREASON") == 0)
+        return MHIGHESTFLAGREASON;
+    else if (strcmp(s, "MPITMODE") == 0)
+        return MPITMODE;
+    else if (strcmp(s, "MPITSCHEDULE") == 0)
+        return MPITSCHEDULE;
+    else if (strcmp(s, "MCARFLAGS") == 0)
+        return MCARFLAGS;
+    else if (strcmp(s, "MOILTEMPCELSIUS") == 0)
+        return MOILTEMPCELSIUS;
+    else if (strcmp(s, "MOILPRESSUREKPA") == 0)
+        return MOILPRESSUREKPA;
+    else if (strcmp(s, "MWATERTEMPCELSIUS") == 0)
+        return MWATERTEMPCELSIUS;
+    else if (strcmp(s, "MWATERPRESSUREKPA") == 0)
+        return MWATERPRESSUREKPA;
+    else if (strcmp(s, "MFUELPRESSUREKPA") == 0)
+        return MFUELPRESSUREKPA;
+    else if (strcmp(s, "MFUELLEVEL") == 0)
+        return MFUELLEVEL;
+    else if (strcmp(s, "MFUELCAPACITY") == 0)
+        return MFUELCAPACITY;
+    else if (strcmp(s, "MSPEED") == 0)
+        return MSPEED;
+    else if (strcmp(s, "MRPM") == 0)
+        return MRPM;
+    else if (strcmp(s, "MMAXRPM") == 0)
+        return MMAXRPM;
+    else if (strcmp(s, "MBRAKE") == 0)
+        return MBRAKE;
+    else if (strcmp(s, "MTHROTTLE") == 0)
+        return MTHROTTLE;
+    else if (strcmp(s, "MCLUTCH") == 0)
+        return MCLUTCH;
+    else if (strcmp(s, "MSTEERING") == 0)
+        return MSTEERING;
+    else if (strcmp(s, "MGEAR") == 0)
+        return MGEAR;
+    else if (strcmp(s, "MNUMGEARS") == 0)
+        return MNUMGEARS;
+    else if (strcmp(s, "MODOMETERKM") == 0)
+        return MODOMETERKM;
+    else if (strcmp(s, "MANTILOCKACTIVE") == 0)
+        return MANTILOCKACTIVE;
+    else if (strcmp(s, "MLASTOPPONENTCOLLISIONINDEX") == 0)
+        return MLASTOPPONENTCOLLISIONINDEX;
+    else if (strcmp(s, "MLASTOPPONENTCOLLISIONMAGNITUDE") == 0)
+        return MLASTOPPONENTCOLLISIONMAGNITUDE;
+    else if (strcmp(s, "MBOOSTACTIVE") == 0)
+        return MBOOSTACTIVE;
+    else if (strcmp(s, "MBOOSTAMOUNT") == 0)
+        return MBOOSTAMOUNT;
+    else if (strcmp(s, "MORIENTATION") == 0)
+        return MORIENTATION;
+    else if (strcmp(s, "MLOCALVELOCITY") == 0)
+        return MLOCALVELOCITY;
+    else if (strcmp(s, "MWORLDVELOCITY") == 0)
+        return MWORLDVELOCITY;
+    else if (strcmp(s, "MANGULARVELOCITY") == 0)
+        return MANGULARVELOCITY;
+    else if (strcmp(s, "MLOCALACCELERATION") == 0)
+        return MLOCALACCELERATION;
+    else if (strcmp(s, "MWORLDACCELERATION") == 0)
+        return MWORLDACCELERATION;
+    else if (strcmp(s, "MEXTENTSCENTRE") == 0)
+        return MEXTENTSCENTRE;
+    else if (strcmp(s, "MTYREFLAGS") == 0)
+        return MTYREFLAGS;
+    else if (strcmp(s, "MTERRAIN") == 0)
+        return MTERRAIN;
+    else if (strcmp(s, "MTYREY") == 0)
+        return MTYREY;
+    else if (strcmp(s, "MTYRERPS") == 0)
+        return MTYRERPS;
+    else if (strcmp(s, "MTYRESLIPSPEED") == 0)
+        return MTYRESLIPSPEED;
+    else if (strcmp(s, "MTYRETEMP") == 0)
+        return MTYRETEMP;
+    else if (strcmp(s, "MTYREGRIP") == 0)
+        return MTYREGRIP;
+    else if (strcmp(s, "MTYREHEIGHTABOVEGROUND") == 0)
+        return MTYREHEIGHTABOVEGROUND;
+    else if (strcmp(s, "MTYRELATERALSTIFFNESS") == 0)
+        return MTYRELATERALSTIFFNESS;
+    else if (strcmp(s, "MTYREWEAR") == 0)
+        return MTYREWEAR;
+    else if (strcmp(s, "MBRAKEDAMAGE") == 0)
+        return MBRAKEDAMAGE;
+    else if (strcmp(s, "MSUSPENSIONDAMAGE") == 0)
+        return MSUSPENSIONDAMAGE;
+    else if (strcmp(s, "MBRAKETEMPCELSIUS") == 0)
+        return MBRAKETEMPCELSIUS;
+    else if (strcmp(s, "MTYRETREADTEMP") == 0)
+        return MTYRETREADTEMP;
+    else if (strcmp(s, "MTYRELAYERTEMP") == 0)
+        return MTYRELAYERTEMP;
+    else if (strcmp(s, "MTYRECARCASSTEMP") == 0)
+        return MTYRECARCASSTEMP;
+    else if (strcmp(s, "MTYRERIMTEMP") == 0)
+        return MTYRERIMTEMP;
+    else if (strcmp(s, "MTYREINTERNALAIRTEMP") == 0)
+        return MTYREINTERNALAIRTEMP;
+    else if (strcmp(s, "MCRASHSTATE") == 0)
+        return MCRASHSTATE;
+    else if (strcmp(s, "MAERODAMAGE") == 0)
+        return MAERODAMAGE;
+    else if (strcmp(s, "MENGINEDAMAGE") == 0)
+        return MENGINEDAMAGE;
+    else if (strcmp(s, "MAMBIENTTEMPERATURE") == 0)
+        return MAMBIENTTEMPERATURE;
+    else if (strcmp(s, "MTRACKTEMPERATURE") == 0)
+        return MTRACKTEMPERATURE;
+    else if (strcmp(s, "MRAINDENSITY") == 0)
+        return MRAINDENSITY;
+    else if (strcmp(s, "MWINDSPEED") == 0)
+        return MWINDSPEED;
+    else if (strcmp(s, "MWINDDIRECTIONX") == 0)
+        return MWINDDIRECTIONX;
+    else if (strcmp(s, "MWINDDIRECTIONY") == 0)
+        return MWINDDIRECTIONY;
+    else if (strcmp(s, "MCLOUDBRIGHTNESS") == 0)
+        return MCLOUDBRIGHTNESS;
+    else if (strcmp(s, "EXT_MSESSIONSECTORGAP") == 0)
         return EXT_MSESSIONSECTORGAP;
-    else if(strcmp(s, "EXT_MSESSIONSECTORDELTA") == 0)
-            return EXT_MSESSIONSECTORDELTA;
-    else if(strcmp(s, "EXT_MCURRENTTIME") == 0)
-            return EXT_MCURRENTTIME;
-    else if(strcmp(s, "EXT_MLASTLAPTIME") == 0)
+    else if (strcmp(s, "EXT_MSESSIONSECTORDELTA") == 0)
+        return EXT_MSESSIONSECTORDELTA;
+    else if (strcmp(s, "EXT_MCURRENTTIME") == 0)
+        return EXT_MCURRENTTIME;
+    else if (strcmp(s, "EXT_MLASTLAPTIME") == 0)
         return EXT_MLASTLAPTIME;
-    else if(strcmp(s, "EXT_MPOSITION") == 0)
+    else if (strcmp(s, "EXT_MPOSITION") == 0)
         return EXT_MPOSITION;
-    else if(strcmp(s, "EXT_MCRASHSTATE") == 0)
+    else if (strcmp(s, "EXT_MCRASHSTATE") == 0)
         return EXT_MCRASHSTATE;
     else
         return -1;
 }
 
-char* enumPCarsFieldsToString(int e){
+char* enumPCarsFieldsToString(int e) {
     switch (e) {
-        case MVERSION: 
-            return "MVERSION"; 
+        case MVERSION:
+            return "MVERSION";
         case MBUILDVERSIONNUMBER:
-                return "MBUILDVERSIONNUMBER";
+            return "MBUILDVERSIONNUMBER";
         case MGAMESTATE:
-                return "MGAMESTATE";
+            return "MGAMESTATE";
         case MSESSIONSTATE:
-                return "MSESSIONSTATE";
+            return "MSESSIONSTATE";
         case MRACESTATE:
-                return "MRACESTATE";
+            return "MRACESTATE";
         case MVIEWEDPARTICIPANTINDEX:
-                return "MVIEWEDPARTICIPANTINDEX";
+            return "MVIEWEDPARTICIPANTINDEX";
         case MNUMPARTICIPANTS:
-                return "MNUMPARTICIPANTS";
+            return "MNUMPARTICIPANTS";
         case MPARTICIPANTINFO:
-                return "MPARTICIPANTINFO";
+            return "MPARTICIPANTINFO";
         case MUNFILTEREDTHROTTLE:
-                return "MUNFILTEREDTHROTTLE";
-        case MUNFILTEREDBRAKE :
-                return "MUNFILTEREDBRAKE ";
+            return "MUNFILTEREDTHROTTLE";
+        case MUNFILTEREDBRAKE:
+            return "MUNFILTEREDBRAKE ";
         case MUNFILTEREDSTEERING:
-                return "MUNFILTEREDSTEERING";
+            return "MUNFILTEREDSTEERING";
         case MUNFILTEREDCLUTCH:
-                return "MUNFILTEREDCLUTCH";
+            return "MUNFILTEREDCLUTCH";
         case MCARNAME:
-                return "MCARNAME";
+            return "MCARNAME";
         case MCARCLASSNAME:
-                return "MCARCLASSNAME";
+            return "MCARCLASSNAME";
         case MLAPSINEVENT:
-                return "MLAPSINEVENT";
+            return "MLAPSINEVENT";
         case MTRACKLOCATION:
-                return "MTRACKLOCATION";
+            return "MTRACKLOCATION";
         case MTRACKVARIATION:
-                return "MTRACKVARIATION";
+            return "MTRACKVARIATION";
         case MTRACKLENGTH:
-                return "MTRACKLENGTH";
+            return "MTRACKLENGTH";
         case MLAPINVALIDATED:
-                return "MLAPINVALIDATED";
+            return "MLAPINVALIDATED";
         case MBESTLAPTIME:
-                return "MBESTLAPTIME";
+            return "MBESTLAPTIME";
         case MLASTLAPTIME:
-                return "MLASTLAPTIME";
+            return "MLASTLAPTIME";
         case MCURRENTTIME:
-                return "MCURRENTTIME";
+            return "MCURRENTTIME";
         case MSPLITTIMEAHEAD:
-                return "MSPLITTIMEAHEAD";
+            return "MSPLITTIMEAHEAD";
         case MSPLITTIMEBEHIND:
-                return "MSPLITTIMEBEHIND";
+            return "MSPLITTIMEBEHIND";
         case MSPLITTIME:
-                return "MSPLITTIME";
+            return "MSPLITTIME";
         case MEVENTTIMEREMAINING:
-                return "MEVENTTIMEREMAINING";
+            return "MEVENTTIMEREMAINING";
         case MPERSONALFASTESTLAPTIME:
-                return "MPERSONALFASTESTLAPTIME";
+            return "MPERSONALFASTESTLAPTIME";
         case MWORLDFASTESTLAPTIME:
-                return "MWORLDFASTESTLAPTIME";
+            return "MWORLDFASTESTLAPTIME";
         case MCURRENTSECTOR1TIME:
-                return "MCURRENTSECTOR1TIME";
+            return "MCURRENTSECTOR1TIME";
         case MCURRENTSECTOR2TIME:
-                return "MCURRENTSECTOR2TIME";
+            return "MCURRENTSECTOR2TIME";
         case MCURRENTSECTOR3TIME:
-                return "MCURRENTSECTOR3TIME";
+            return "MCURRENTSECTOR3TIME";
         case MFASTESTSECTOR1TIME:
-                return "MFASTESTSECTOR1TIME";
+            return "MFASTESTSECTOR1TIME";
         case MFASTESTSECTOR2TIME:
-                return "MFASTESTSECTOR2TIME";
+            return "MFASTESTSECTOR2TIME";
         case MFASTESTSECTOR3TIME:
-                return "MFASTESTSECTOR3TIME";
+            return "MFASTESTSECTOR3TIME";
         case MPERSONALFASTESTSECTOR1TIME:
-                return "MPERSONALFASTESTSECTOR1TIME";
+            return "MPERSONALFASTESTSECTOR1TIME";
         case MPERSONALFASTESTSECTOR2TIME:
-                return "MPERSONALFASTESTSECTOR2TIME";
+            return "MPERSONALFASTESTSECTOR2TIME";
         case MPERSONALFASTESTSECTOR3TIME:
-                return "MPERSONALFASTESTSECTOR3TIME";
+            return "MPERSONALFASTESTSECTOR3TIME";
         case MWORLDFASTESTSECTOR1TIME:
-                return "MWORLDFASTESTSECTOR1TIME";
+            return "MWORLDFASTESTSECTOR1TIME";
         case MWORLDFASTESTSECTOR2TIME:
-                return "MWORLDFASTESTSECTOR2TIME";
+            return "MWORLDFASTESTSECTOR2TIME";
         case MWORLDFASTESTSECTOR3TIME:
-                return "MWORLDFASTESTSECTOR3TIME";
+            return "MWORLDFASTESTSECTOR3TIME";
         case MHIGHESTFLAGCOLOUR:
-                return "MHIGHESTFLAGCOLOUR";
+            return "MHIGHESTFLAGCOLOUR";
         case MHIGHESTFLAGREASON:
-                return "MHIGHESTFLAGREASON";
+            return "MHIGHESTFLAGREASON";
         case MPITMODE:
-                return "MPITMODE";
+            return "MPITMODE";
         case MPITSCHEDULE:
-                return "MPITSCHEDULE";
+            return "MPITSCHEDULE";
         case MCARFLAGS:
-                return "MCARFLAGS";
+            return "MCARFLAGS";
         case MOILTEMPCELSIUS:
-                return "MOILTEMPCELSIUS";
+            return "MOILTEMPCELSIUS";
         case MOILPRESSUREKPA:
-                return "MOILPRESSUREKPA";
+            return "MOILPRESSUREKPA";
         case MWATERTEMPCELSIUS:
-                return "MWATERTEMPCELSIUS";
+            return "MWATERTEMPCELSIUS";
         case MWATERPRESSUREKPA:
-                return "MWATERPRESSUREKPA";
+            return "MWATERPRESSUREKPA";
         case MFUELPRESSUREKPA:
-                return "MFUELPRESSUREKPA";
+            return "MFUELPRESSUREKPA";
         case MFUELLEVEL:
-                return "MFUELLEVEL";
-        case MFUELCAPACITY :
-                return "MFUELCAPACITY";
+            return "MFUELLEVEL";
+        case MFUELCAPACITY:
+            return "MFUELCAPACITY";
         case MSPEED:
-                return "MSPEED";
+            return "MSPEED";
         case MRPM:
-                return "MRPM";
+            return "MRPM";
         case MMAXRPM:
-                return "MMAXRPM";
+            return "MMAXRPM";
         case MBRAKE:
-                return "MBRAKE";
+            return "MBRAKE";
         case MTHROTTLE:
-                return "MTHROTTLE";
+            return "MTHROTTLE";
         case MCLUTCH:
-                return "MCLUTCH";
+            return "MCLUTCH";
         case MSTEERING:
-                return "MSTEERING";
+            return "MSTEERING";
         case MGEAR:
-                return "MGEAR";
+            return "MGEAR";
         case MNUMGEARS:
-                return "MNUMGEARS";
+            return "MNUMGEARS";
         case MODOMETERKM:
-                return "MODOMETERKM";
+            return "MODOMETERKM";
         case MANTILOCKACTIVE:
-                return "MANTILOCKACTIVE";
-        case MLASTOPPONENTCOLLISIONINDEX :
-                return "MLASTOPPONENTCOLLISIONINDEX";
-        case MLASTOPPONENTCOLLISIONMAGNITUDE :
-                return "MLASTOPPONENTCOLLISIONMAGNITUDE";
+            return "MANTILOCKACTIVE";
+        case MLASTOPPONENTCOLLISIONINDEX:
+            return "MLASTOPPONENTCOLLISIONINDEX";
+        case MLASTOPPONENTCOLLISIONMAGNITUDE:
+            return "MLASTOPPONENTCOLLISIONMAGNITUDE";
         case MBOOSTACTIVE:
-                return "MBOOSTACTIVE";
+            return "MBOOSTACTIVE";
         case MBOOSTAMOUNT:
-                return "MBOOSTAMOUNT";
+            return "MBOOSTAMOUNT";
         case MORIENTATION:
-                return "MORIENTATION";
+            return "MORIENTATION";
         case MLOCALVELOCITY:
-                return "MLOCALVELOCITY";
+            return "MLOCALVELOCITY";
         case MWORLDVELOCITY:
-                return "MWORLDVELOCITY";
+            return "MWORLDVELOCITY";
         case MANGULARVELOCITY:
-                return "MANGULARVELOCITY";
+            return "MANGULARVELOCITY";
         case MLOCALACCELERATION:
-                return "MLOCALACCELERATION";
+            return "MLOCALACCELERATION";
         case MWORLDACCELERATION:
-                return "MWORLDACCELERATION";
+            return "MWORLDACCELERATION";
         case MEXTENTSCENTRE:
-                return "MEXTENTSCENTRE";
+            return "MEXTENTSCENTRE";
         case MTYREFLAGS:
-                return "MTYREFLAGS";
+            return "MTYREFLAGS";
         case MTERRAIN:
-                return "MTERRAIN";
+            return "MTERRAIN";
         case MTYREY:
-                return "MTYREY";
+            return "MTYREY";
         case MTYRERPS:
-                return "MTYRERPS";
+            return "MTYRERPS";
         case MTYRESLIPSPEED:
-                return "MTYRESLIPSPEED";
+            return "MTYRESLIPSPEED";
         case MTYRETEMP:
-                return "MTYRETEMP";
+            return "MTYRETEMP";
         case MTYREGRIP:
-                return "MTYREGRIP";
+            return "MTYREGRIP";
         case MTYREHEIGHTABOVEGROUND:
-                return "MTYREHEIGHTABOVEGROUND";
+            return "MTYREHEIGHTABOVEGROUND";
         case MTYRELATERALSTIFFNESS:
-                return "MTYRELATERALSTIFFNESS";
+            return "MTYRELATERALSTIFFNESS";
         case MTYREWEAR:
-                return "MTYREWEAR";
+            return "MTYREWEAR";
         case MBRAKEDAMAGE:
-                return "MBRAKEDAMAGE";
+            return "MBRAKEDAMAGE";
         case MSUSPENSIONDAMAGE:
-                return "MSUSPENSIONDAMAGE";
+            return "MSUSPENSIONDAMAGE";
         case MBRAKETEMPCELSIUS:
-                return "MBRAKETEMPCELSIUS";
+            return "MBRAKETEMPCELSIUS";
         case MTYRETREADTEMP:
-                return "MTYRETREADTEMP";
+            return "MTYRETREADTEMP";
         case MTYRELAYERTEMP:
-                return "MTYRELAYERTEMP";
+            return "MTYRELAYERTEMP";
         case MTYRECARCASSTEMP:
-                return "MTYRECARCASSTEMP";
+            return "MTYRECARCASSTEMP";
         case MTYRERIMTEMP:
-                return "MTYRERIMTEMP";
+            return "MTYRERIMTEMP";
         case MTYREINTERNALAIRTEMP:
-                return "MTYREINTERNALAIRTEMP";
+            return "MTYREINTERNALAIRTEMP";
         case MCRASHSTATE:
-                return "MCRASHSTATE";
+            return "MCRASHSTATE";
         case MAERODAMAGE:
-                return "MAERODAMAGE";
+            return "MAERODAMAGE";
         case MENGINEDAMAGE:
-                return "MENGINEDAMAGE";
+            return "MENGINEDAMAGE";
         case MAMBIENTTEMPERATURE:
-                return "MAMBIENTTEMPERATURE";
+            return "MAMBIENTTEMPERATURE";
         case MTRACKTEMPERATURE:
-                return "MTRACKTEMPERATURE";
+            return "MTRACKTEMPERATURE";
         case MRAINDENSITY:
-                return "MRAINDENSITY";
+            return "MRAINDENSITY";
         case MWINDSPEED:
-                return "MWINDSPEED";
+            return "MWINDSPEED";
         case MWINDDIRECTIONX:
-                return "MWINDDIRECTIONX";
+            return "MWINDDIRECTIONX";
         case MWINDDIRECTIONY:
-                return "MWINDDIRECTIONY";
+            return "MWINDDIRECTIONY";
         case MCLOUDBRIGHTNESS:
-                return "MCLOUDBRIGHTNESS";
+            return "MCLOUDBRIGHTNESS";
         case EXT_MSESSIONSECTORGAP:
-                return "EXT_MSESSIONSECTORGAP";
+            return "EXT_MSESSIONSECTORGAP";
         case EXT_MSESSIONSECTORDELTA:
-                return "EXT_MSESSIONSECTORDELTA";
+            return "EXT_MSESSIONSECTORDELTA";
         case EXT_MCURRENTTIME:
-                return "EXT_MCURRENTTIME";                        
+            return "EXT_MCURRENTTIME";
         case EXT_MLASTLAPTIME:
             return "EXT_MLASTLAPTIME";
         case EXT_MPOSITION:
-                return "EXT_MPOSITION";
+            return "EXT_MPOSITION";
         case END_PCARS_FIELDS:
-                return "END_PCARS_FIELDS";
+            return "END_PCARS_FIELDS";
         case EXT_MCRASHSTATE:
-                return "EXT_MCRASHSTATE";
+            return "EXT_MCRASHSTATE";
         default:
             return NULL;
-    }   
+    }
 }
 
-
-
 float getSpeed(simSourceContext* ctx) {
-    if(ctx->currentGame == PCARS_GAME){
+    if (ctx->currentGame == PCARS_GAME) {
         return ctx->pCarsSourceCtx.pCarsSHM->mSpeed * 3.6;
-    } else if(ctx->currentGame == ASSETTO_GAME){
+    } else if (ctx->currentGame == ASSETTO_GAME) {
         return ctx->assettoSourceCtx.acCtx->shmPhysics->speedKmh;
     } else {
         return -1;
     }
 }
 
-float getMaxRpms(simSourceContext* ctx){
-    if(ctx->currentGame == PCARS_GAME){
+float getMaxRpms(simSourceContext* ctx) {
+    if (ctx->currentGame == PCARS_GAME) {
         return ctx->pCarsSourceCtx.pCarsSHM->mMaxRPM;
-    } else if(ctx->currentGame == ASSETTO_GAME){
+    } else if (ctx->currentGame == ASSETTO_GAME) {
         return ctx->assettoSourceCtx.acCtx->shmStatic->maxRpm;
     } else {
         return -1;
@@ -1023,9 +1021,9 @@ float getMaxRpms(simSourceContext* ctx){
 }
 
 float getRpm(simSourceContext* ctx) {
-    if(ctx->currentGame == PCARS_GAME){
+    if (ctx->currentGame == PCARS_GAME) {
         return ctx->pCarsSourceCtx.pCarsSHM->mRpm;
-    } else if(ctx->currentGame == ASSETTO_GAME){
+    } else if (ctx->currentGame == ASSETTO_GAME) {
         return ctx->assettoSourceCtx.acCtx->shmPhysics->rpms;
     } else {
         return -1;
@@ -1033,73 +1031,72 @@ float getRpm(simSourceContext* ctx) {
 }
 
 float getGear(simSourceContext* ctx) {
-    if(ctx->currentGame == PCARS_GAME){
+    if (ctx->currentGame == PCARS_GAME) {
         return ctx->pCarsSourceCtx.pCarsSHM->mGear;
-    } else if(ctx->currentGame == ASSETTO_GAME){
+    } else if (ctx->currentGame == ASSETTO_GAME) {
         return ctx->assettoSourceCtx.acCtx->shmPhysics->gear;
     } else {
         return -1;
     }
 }
 
-float getThrottle(simSourceContext* ctx){
-    if(ctx->currentGame == PCARS_GAME){
+float getThrottle(simSourceContext* ctx) {
+    if (ctx->currentGame == PCARS_GAME) {
         return ctx->pCarsSourceCtx.pCarsSHM->mThrottle;
-    } else if(ctx->currentGame == ASSETTO_GAME){
+    } else if (ctx->currentGame == ASSETTO_GAME) {
         return ctx->assettoSourceCtx.acCtx->shmPhysics->gas;
     } else {
         return -1;
     }
 }
 
-
-int getGameState(simSourceContext* ctx){
-    if(ctx->currentGame == PCARS_GAME){
+int getGameState(simSourceContext* ctx) {
+    if (ctx->currentGame == PCARS_GAME) {
         return ctx->pCarsSourceCtx.pCarsSHM->mGameState;
-    } else if(ctx->currentGame == ASSETTO_GAME){
+    } else if (ctx->currentGame == ASSETTO_GAME) {
         return GAME_INGAME_PLAYING;
     } else {
         return -1;
     }
 }
 
-int getPitLimiter(simSourceContext* ctx){
-    if(ctx->currentGame == PCARS_GAME){
+int getPitLimiter(simSourceContext* ctx) {
+    if (ctx->currentGame == PCARS_GAME) {
         return 0;
-    } else if(ctx->currentGame == ASSETTO_GAME){
-        return ctx->assettoSourceCtx.acCtx->hFileGraphics->pitLimiterOn;
+    } else if (ctx->currentGame == ASSETTO_GAME) {
+        return ctx->assettoSourceCtx.acCtx->shmPhysics->pitLimiterOn;
     } else {
         return -1;
     }
 }
 
-int getFlagStatus(simSourceContext* ctx){
-    if(ctx->currentGame == PCARS_GAME){
+int getFlagStatus(simSourceContext* ctx) {
+    if (ctx->currentGame == PCARS_GAME) {
         return 0;
-    } else if(ctx->currentGame == ASSETTO_GAME){
-        return ctx->assettoSourceCtx.acCtx->hFileGraphics->flag;
+    } else if (ctx->currentGame == ASSETTO_GAME) {
+        return ctx->assettoSourceCtx.acCtx->shmGraphics->flag;
     } else {
         return -1;
     }
 }
 
-float getTurboBoost(simSourceContext* ctx){
-    if(ctx->currentGame == PCARS_GAME){
+float getTurboBoost(simSourceContext* ctx) {
+    if (ctx->currentGame == PCARS_GAME) {
         return 0;
-    } else if(ctx->currentGame == ASSETTO_GAME){
-        return ctx->assettoSourceCtx.acCtx->hFilePhysics->turboBoost;
+    } else if (ctx->currentGame == ASSETTO_GAME) {
+        return ctx->assettoSourceCtx.acCtx->shmPhysics->turboBoost;
     } else {
         return -1;
     }
 }
 
-int getDRS(simSourceContext* ctx){
-    if(ctx->currentGame == PCARS_GAME){
+int getDRS(simSourceContext* ctx) {
+    if (ctx->currentGame == PCARS_GAME) {
         return 0;
-    } else if(ctx->currentGame == ASSETTO_GAME){
-        int result = ctx->assettoSourceCtx.acCtx->hFilePhysics->drsAvailable;
-        int drsEnabled = ctx->assettoSourceCtx.acCtx->hFilePhysics->drsEnabled;
-        if(drsEnabled == 1) {
+    } else if (ctx->currentGame == ASSETTO_GAME) {
+        int result = ctx->assettoSourceCtx.acCtx->shmPhysics->drsAvailable;
+        int drsEnabled = ctx->assettoSourceCtx.acCtx->shmPhysics->drsEnabled;
+        if (drsEnabled == 1) {
             result = 2;
         }
         return result;
