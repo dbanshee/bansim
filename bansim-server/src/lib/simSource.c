@@ -1104,3 +1104,12 @@ int getDRS(simSourceContext* ctx) {
         return -1;
     }
 }
+
+//uint8_t getABS(simSourceContext* ctx) {
+//    uint8_t res = 0x00;
+//    
+//    res[0] = ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[0] == 0; // Front Left
+//    res[1] = ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[1] == 0; // Front Right
+//    res[2] = ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[2] == 0; // Rear Left
+//    res[3] = ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[3] == 0; // Rear Right
+//}

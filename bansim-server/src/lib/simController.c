@@ -47,6 +47,7 @@ static int kittOn = 0;
 
 static long lastTachometer = 0;
 
+void reset();
 int sendSimBoardCmdByte(serialContext* ctx, char cmd, char value);
 int sendSimBoardCmdInt(serialContext* ctx, char cmd, uint16_t value);
 
@@ -94,13 +95,30 @@ long current_timestamp() {
     return milliseconds;
 }
 
+void reset() {
+    lastGameState = 0;
+    lastLedOn = 0;
+    lastSpeed = 0;
+    lastTCRpms = 0;
+    lastGear = 0;
+    lastEngineOn = 0;
+    lastFlag = AC_NO_FLAG;
+    lastPitLimiter = 0;
+    lastBoost = 0;
+    lastDrs = 0;
+    blinkOn = 0;
+    neutralOn = 0;
+    kittOn = 0;
+    lastTachometer = 0;
+}
+
 int refreshLEDBar(simCtrlContext* ctx) {
     long currentTime = current_timestamp();
     char buff[5];
 
     int gameState = getGameState(ctx->simSrcCtx);
 
-    if (kittOn == 0 && (gameState == GAME_EXITED || gameState == GAME_FRONT_END || gameState == GAME_INGAME_PAUSED)) {
+    if (kittOn == 0 && gameState != GAME_INGAME_PLAYING) {
         sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_KITT, 1);
         kittOn = 1;
     } else if (gameState == GAME_INGAME_PLAYING) {
@@ -116,7 +134,7 @@ int refreshLEDBar(simCtrlContext* ctx) {
         int maxRpms = getMaxRpms(ctx->simSrcCtx) * LED_RPM_MAX_RATIO;
         double ledsThres = maxRpms*LED_RPM_START_RATIO;
         double ledLen = (maxRpms - ledsThres) / LED_RPM_NUMLEDS;
-        int engineActive = (rpms > 10); // Increiblemente con el motor calado da 0.98 (en PCars)...
+        int engineOn = (rpms > 10); // Increiblemente con el motor calado da 0.98 (en PCars)...
 
         int numLeds = 0;
 
@@ -153,37 +171,37 @@ int refreshLEDBar(simCtrlContext* ctx) {
 
 
         // Start Engine
-        if (lastEngineOn != engineActive) {
-            if (engineActive == 1) {
+        if (lastEngineOn != engineOn) {
+            if (engineOn == 0) {
                 sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_NEUTRAL, 1);
                 neutralOn = 2;
             } else {
                 sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_NEUTRAL, 0);
                 neutralOn = 0;
             }
-        }
+        } else {
+            // Neutral start condition
+            if (engineOn && neutralOn == 0 && nGear == 0 && numLeds == 0 && throttle == 0) {
+                startNeutralTime = currentTime;
+                neutralOn = 1;
+            }
 
-        // Neutral start condition
-        if (engineActive && neutralOn == 0 && nGear == 0 && numLeds == 0 && throttle == 0) {
-            startNeutralTime = currentTime;
-            neutralOn = 1;
-        }
-
-        // Neutral start/stop
-        if (neutralOn > 0) {
-            if (neutralOn == 2 && (nGear != 0 || numLeds != 0 || throttle != 0 || !engineActive)) {
-                sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_NEUTRAL, 0);
-                neutralOn = 0;
-            } else if (neutralOn == 1 && (currentTime - startNeutralTime) > LED_NEUTRAL_DELAY_MILLIS) {
-                sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_NEUTRAL, 1);
-                neutralOn = 2;
+            // Neutral start/stop
+            if (neutralOn > 0) {
+                if (neutralOn == 2 && (nGear != 0 || numLeds != 0 || throttle != 0 || !engineOn)) {
+                    sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_NEUTRAL, 0);
+                    neutralOn = 0;
+                } else if (neutralOn == 1 && (currentTime - startNeutralTime) > LED_NEUTRAL_DELAY_MILLIS) {
+                    sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_NEUTRAL, 1);
+                    neutralOn = 2;
+                }
             }
         }
 
         // Direct Cars magnitudes
         lastLedOn = numLeds;
         lastGear = nGear;
-        lastEngineOn = engineActive;
+        lastEngineOn = engineOn;
     }
 
     lastGameState = gameState;

@@ -206,6 +206,7 @@ int getPitLimiter(simSourceContext* ctx);
 int getFlagStatus(simSourceContext* ctx);
 float getTurboBoost(simSourceContext* ctx);
 int getDRS(simSourceContext* ctx);
+void getABS(simSourceContext* ctx, uint8_t* res);
 
 #endif /* SIMSOURCE_H */
 

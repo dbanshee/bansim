@@ -707,7 +707,7 @@ void loadLedFlagMode(uint8_t flagMode, uint8_t blinkLed){
       } else if (flagMode == LED2_INTERRUPT_FLAG_YELLOW) {
         leds2.setPixelColor(i, '\xff', '\x00', '\xff');    
       } else if (flagMode == LED2_INTERRUPT_FLAG_BLACK) {
-        leds2.setPixelColor(i, '\x00', '\xff', '\x00');
+        leds2.setPixelColor(i, '\xa6', '\x5e', '\x2e');
       } else if (flagMode == LED2_INTERRUPT_FLAG_WHITE) {
         leds2.setPixelColor(i, '\xff', '\xff', '\xff');
       } else if (flagMode == LED2_INTERRUPT_FLAG_CHECK) {
@@ -887,7 +887,7 @@ void refreshCallback(void){
 
   // Pit Limit
   if(processedLeds2 == 0 && 
-    (leds2PitLimMode != lastLeds2PitLimMode || (leds2PitLimMode != 0 /*&& lastLed2Mode != byte(BINARY_CMD_PITLIM)*/))) {
+    (leds2PitLimMode != lastLeds2PitLimMode || (leds2PitLimMode != 0 && lastLed2Mode < byte(BINARY_CMD_PITLIM)))) {
       
     if(abs(currentTime-lastBlinkTime2) > DEFAULT_LED2_BLINK_MILLIS) {
       lastBlinkTime2 = currentTime;
@@ -903,7 +903,7 @@ void refreshCallback(void){
   
   // Boost
   if(processedLeds2 == 0 && 
-    (leds2BoostMode != lastLeds2BoostMode || (leds2BoostMode != 0 && lastLed2Mode != byte(BINARY_CMD_BOOST)))) {
+    (leds2BoostMode != lastLeds2BoostMode || (leds2BoostMode != 0 && lastLed2Mode < byte(BINARY_CMD_BOOST)))) {
       
     loadBoostMode(leds2BoostMode);
     
@@ -914,7 +914,7 @@ void refreshCallback(void){
   
   // DRS
   if(processedLeds2 == 0 && 
-    (leds2DRSMode != lastLeds2DRSMode || (leds2DRSMode != 0 && lastLed2Mode != byte(BINARY_CMD_DRS)))) {
+    (leds2DRSMode != lastLeds2DRSMode || (leds2DRSMode != 0 && lastLed2Mode < byte(BINARY_CMD_DRS)))) {
       
     loadDRSMode(leds2DRSMode);
     
@@ -925,13 +925,13 @@ void refreshCallback(void){
   
   // ABS
   if(processedLeds2 == 0 && 
-    (leds2ABSMode != lastLeds2ABSMode || (leds2DRSMode != 0x00 && lastLed2Mode != byte(BINARY_CMD_ABS)))) {
-      
+    (leds2ABSMode != lastLeds2ABSMode || (leds2DRSMode != 0x00 && lastLed2Mode < byte(BINARY_CMD_ABS)))) {
+
     loadABSMode(absStatus);
     
     lastLeds2ABSMode = leds2ABSMode;
     lastLed2Mode     = byte(BINARY_CMD_ABS);
-    processedLeds2   = 1;
+    processedLeds2   = 1;      
   }
   
   if(processedLeds1 == 1) {
