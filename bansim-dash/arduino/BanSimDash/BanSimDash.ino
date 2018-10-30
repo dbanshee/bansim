@@ -72,7 +72,6 @@
 #define DEFAULT_LED2_ARRAY_PIN        15
 #define DEFAULT_LED2_ARRAY_SIZE       8
 #define DEFAULT_LED2_BLINK_MILLIS     500L
-#define DEFAULT_LED2_BLINK_MILLIS     500L
 
 // Tachometer Config
 #define DEFAULT_TACHOMETER_ARRAY_PIN  5
@@ -111,9 +110,6 @@ volatile unsigned long lastKittTime;
 volatile int8_t ledsKittState;
 volatile int8_t ledsKittDirection;
 
-// Leds 2 current mode
-volatile byte lastLed2Mode = byte(BINARY_CMD_CHANGE_MODE);
-
 // Flag Control
 volatile uint8_t leds2FlagMode = 0;
 volatile uint8_t lastLeds2FlagMode = 0;
@@ -135,6 +131,8 @@ volatile byte leds2ABSMode     = byte(0x00);
 volatile byte lastLeds2ABSMode = byte(0x00);
 volatile uint8_t absStatus[4]  = {0,0,0,0}; 
 
+
+volatile uint8_t leds2LastColors [DEFAULT_LED2_ARRAY_SIZE];
 
 ////////////////
 // Global Vars
@@ -170,6 +168,7 @@ void setup() {
   // To Debug
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
+
   
   ////////////////////////////
   // Inicializacion de Timers
@@ -188,6 +187,7 @@ void setup() {
     
   
   // Initializacion de array de Leds 1
+  leds1.begin();
   leds1.setPin(DEFAULT_LED1_ARRAY_PIN);
   leds1.setNumPixels(DEFAULT_LED1_ARRAY_SIZE);
   leds1.setBrightness(LED1_DEFAULT_BRIGHTNESS);
@@ -201,6 +201,7 @@ void setup() {
   nLeds1Active = lastNLeds1Active = ledsBlinkState = 0;
   
     // Initializacion de array de Leds 2  
+  leds2.begin();
   leds2.setPin(DEFAULT_LED2_ARRAY_PIN);
   leds2.setNumPixels(DEFAULT_LED2_ARRAY_SIZE);
   leds2.setBrightness(LED2_DEFAULT_BRIGHTNESS);
@@ -215,6 +216,7 @@ void setup() {
  * Main Loop
  */
 void loop() {
+  
   // Read Command. No Block
   if(inputMode == INPUT_MODE_ASCII) {
     if(readASCIICommand()){
@@ -812,7 +814,11 @@ void refreshCallback(void){
 
   unsigned long currentTime = millis();
   uint8_t processedLeds1 = 0, processedLeds2 = 0;
-  
+
+  for(int i = 0 ; i < DEFAULT_LED2_ARRAY_SIZE ; i++) {
+    leds2LastColors[i] = leds2.getPixelColor(i);
+  }
+    
   ////////////
   // Leds 1
   ////////////
@@ -881,51 +887,48 @@ void refreshCallback(void){
     }
 
     lastLeds2FlagMode = leds2FlagMode;
-    lastLed2Mode      = byte(BINARY_CMD_FLAG);
     processedLeds2    = 1;   
   }
 
   // Pit Limit
   if(processedLeds2 == 0 && 
-    (leds2PitLimMode != lastLeds2PitLimMode || (leds2PitLimMode != 0 && lastLed2Mode < byte(BINARY_CMD_PITLIM)))) {
+    (leds2PitLimMode != lastLeds2PitLimMode || leds2PitLimMode != 0)) {
       
     if(abs(currentTime-lastBlinkTime2) > DEFAULT_LED2_BLINK_MILLIS) {
       lastBlinkTime2 = currentTime;
       loadLedPitLimiterMode(leds2PitLimMode, ledsBlinkState2);
       ledsBlinkState2  = flipBlinkState(ledsBlinkState2);
+      
     }
     
     lastLeds2PitLimMode = leds2PitLimMode;
-    lastLed2Mode        = byte(BINARY_CMD_PITLIM);
     processedLeds2      = 1;
   }
   
-  
   // Boost
   if(processedLeds2 == 0 && 
-    (leds2BoostMode != lastLeds2BoostMode || (leds2BoostMode != 0 && lastLed2Mode < byte(BINARY_CMD_BOOST)))) {
+    (leds2BoostMode != lastLeds2BoostMode || (leds2BoostMode != 0))) {
       
     loadBoostMode(leds2BoostMode);
     
     lastLeds2BoostMode = leds2BoostMode;
-    lastLed2Mode       = byte(BINARY_CMD_BOOST);
     processedLeds2     = 1;
   }
   
   // DRS
   if(processedLeds2 == 0 && 
-    (leds2DRSMode != lastLeds2DRSMode || (leds2DRSMode != 0 && lastLed2Mode < byte(BINARY_CMD_DRS)))) {
+    (leds2DRSMode != lastLeds2DRSMode || (leds2DRSMode != 0))) {
       
     loadDRSMode(leds2DRSMode);
     
     lastLeds2DRSMode = leds2DRSMode;
-    lastLed2Mode     = byte(BINARY_CMD_DRS);
     processedLeds2   = 1;
   }
   
   // ABS
+  /*
   if(processedLeds2 == 0 && 
-    (leds2ABSMode != lastLeds2ABSMode || (leds2DRSMode != 0x00 && lastLed2Mode < byte(BINARY_CMD_ABS)))) {
+    (leds2ABSMode != lastLeds2ABSMode || (leds2DRSMode != 0x00 && lastLed2Mode > byte(BINARY_CMD_ABS)))) {
 
     loadABSMode(absStatus);
     
@@ -933,6 +936,7 @@ void refreshCallback(void){
     lastLed2Mode     = byte(BINARY_CMD_ABS);
     processedLeds2   = 1;      
   }
+  */
   
   if(processedLeds1 == 1) {
     //cli();
@@ -942,7 +946,18 @@ void refreshCallback(void){
   
   if(processedLeds2 == 1) {
     //cli();
-    leds2.show();
+    
+    bool paint = false;
+    for(int i = 0 ; i < DEFAULT_LED2_ARRAY_SIZE ; i++) {
+      if(leds2LastColors[i] != leds2.getPixelColor(i)) {
+        paint = true;
+        break;  
+      }
+    }
+
+    if(paint) {
+      leds2.show();
+    }
     //sei();
   }
   
