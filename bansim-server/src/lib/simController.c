@@ -23,6 +23,7 @@
 #define BINARY_CMD_PITLIMIT             0x07
 #define BINARY_CMD_BOOST                0x08
 #define BINARY_CMD_DRS                  0x09
+#define BINARY_CMD_ABS                  0x0a
 
 
 static int lastGameState = 0;
@@ -35,6 +36,7 @@ static int lastFlag = AC_NO_FLAG;
 static int lastPitLimiter = 0;
 static int lastBoost = 0;
 static int lastDrs = 0;
+static char lastABS = 0;
 
 
 static int blinkOn = 0; // 3 estados. 0=OFF, 1=MARCADO, 2=ON
@@ -246,6 +248,7 @@ int refreshLED2Bar(simCtrlContext* ctx) {
         int flag = getFlagStatus(ctx->simSrcCtx);
         int boost = (getTurboBoost(ctx->simSrcCtx) == 1) ? 1 : 0;
         int drs = getDRS(ctx->simSrcCtx);
+        char abs = getABS(ctx->simSrcCtx);
 
         if (lastFlag != flag) {
             sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_FLAGS, (uint16_t) flag);
@@ -264,6 +267,11 @@ int refreshLED2Bar(simCtrlContext* ctx) {
 
         if (lastDrs != drs) {
             sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_DRS, (uint16_t) drs);
+            lastDrs = drs;
+        }
+
+        if (lastABS != abs) {
+            sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_ABS, (uint16_t) abs);
             lastDrs = drs;
         }
     }

@@ -81,7 +81,8 @@ void setSimSourceACAPI(simSourceContext* ctx, aCContext* aCCtx);
 // Fields
 ////////////
 
-enum PCARS_FIELDS {     MVERSION,
+enum PCARS_FIELDS {
+    MVERSION,
     MBUILDVERSIONNUMBER,
     MGAMESTATE,
     MSESSIONSTATE,
@@ -206,7 +207,7 @@ int getPitLimiter(simSourceContext* ctx);
 int getFlagStatus(simSourceContext* ctx);
 float getTurboBoost(simSourceContext* ctx);
 int getDRS(simSourceContext* ctx);
-void getABS(simSourceContext* ctx, uint8_t* res);
+uint8_t getABS(simSourceContext* ctx);
 
 #endif /* SIMSOURCE_H */
 

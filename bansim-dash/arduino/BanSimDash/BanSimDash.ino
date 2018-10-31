@@ -59,8 +59,7 @@
 #define BINARY_CMD_ABS                0x0a
 
 // Timers Default periods
-#define REFRESH_DASH_MILLIS           5L
-
+#define REFRESH_DASH_MILLIS           50L
 #define REFRESH_TIMER_MICROSECS       1500L
 #define TACHOMETER_TIMER_MICROSECS    3000L
 
@@ -74,6 +73,7 @@
 #define DEFAULT_LED2_ARRAY_PIN        15
 #define DEFAULT_LED2_ARRAY_SIZE       8
 #define DEFAULT_LED2_BLINK_MILLIS     500L
+#define DEFAULT_LED2_ABS_BLINK_MILLIS 100L
 
 // Tachometer Config
 #define DEFAULT_TACHOMETER_ARRAY_PIN  5
@@ -82,8 +82,8 @@
 
 // ABS CONFIG
 #define ABS_FR_BIT                    0
-#define ABS_FL_BIT                    1
-#define ABS_RR_BIT                    2
+#define ABS_RR_BIT                    1
+#define ABS_FL_BIT                    2
 #define ABS_RL_BIT                    3
 
 ///////////////////
@@ -132,10 +132,11 @@ volatile uint8_t lastLeds2DRSMode = 0;
 volatile byte leds2ABSMode     = byte(0x00);
 volatile byte lastLeds2ABSMode = byte(0x00);
 volatile uint8_t absStatus[4]  = {0,0,0,0}; 
+volatile unsigned long lastBlinkABSTime;
 
 
-volatile uint8_t leds1LastColors [DEFAULT_LED1_ARRAY_SIZE];
-volatile uint8_t leds2LastColors [DEFAULT_LED2_ARRAY_SIZE];
+volatile uint8_t leds1LastColors [DEFAULT_LED1_ARRAY_SIZE*3];
+volatile uint8_t leds2LastColors [DEFAULT_LED2_ARRAY_SIZE*3];
 
 ////////////////
 // Global Vars
@@ -180,8 +181,8 @@ void setup() {
   ////////////////////////////
   
   // Timer 1. Rutina de refresco
-  Timer1.initialize(REFRESH_TIMER_MICROSECS);
-  Timer1.attachInterrupt(refreshLeds);
+  //Timer1.initialize(REFRESH_TIMER_MICROSECS);
+  //Timer1.attachInterrupt(refreshDash);
 
   // Timer 3. Tacometro
   Timer3.initialize(calculateTachPWMPeriod((uint8_t) TACHOMETER_MAX_RPMS));
@@ -234,11 +235,10 @@ void loop() {
     executeBinaryCommand(); // Efficient way. Read and execute.
   }
 
-  /*
   if(current - lastRefreshDash > REFRESH_DASH_MILLIS) {
-      refreshLeds();
+      refreshDash();
+      lastRefreshDash = current;
   }
-  */
 }
 
 boolean readASCIICommand() {
@@ -613,11 +613,13 @@ void binarySetABS(){
 }
 
 void setABS(byte abs) {
-  leds2DRSMode = abs;
+  leds2ABSMode = abs;
+  ledsBlinkState2 = 1;
+  lastBlinkABSTime = millis() - DEFAULT_LED2_ABS_BLINK_MILLIS;
    
   absStatus[ABS_FR_BIT] = bitRead(abs, ABS_FR_BIT);
-  absStatus[ABS_FL_BIT] = bitRead(abs, ABS_FL_BIT);
   absStatus[ABS_RR_BIT] = bitRead(abs, ABS_RR_BIT);
+  absStatus[ABS_FL_BIT] = bitRead(abs, ABS_FL_BIT);
   absStatus[ABS_RL_BIT] = bitRead(abs, ABS_RL_BIT);
 }
 
@@ -772,19 +774,21 @@ void loadDRSMode(uint8_t drsMode){
   }
 }
 
-void loadABSMode(volatile uint8_t absMode []){
+void loadABSMode(volatile uint8_t absMode [], uint8_t blinkLed){
   uint8_t i;
   uint8_t wheelLedSize = DEFAULT_LED2_ARRAY_SIZE / 4;
   
   clearLed2Array();
 
-  for(i = 0; i < DEFAULT_LED2_ARRAY_SIZE; i++){   
-    if( (absMode[ABS_FR_BIT] == 1 && i >= ABS_FR_BIT*wheelLedSize && i < ABS_FR_BIT + wheelLedSize) || 
-        (absMode[ABS_RR_BIT] == 1 && i >= ABS_RR_BIT*wheelLedSize && i < ABS_RR_BIT + wheelLedSize) || 
-        (absMode[ABS_FL_BIT] == 1 && i >= ABS_FL_BIT*wheelLedSize && i < ABS_FL_BIT + wheelLedSize) || 
-        (absMode[ABS_RL_BIT] == 1 && i >= ABS_RL_BIT*wheelLedSize && i < ABS_RL_BIT + wheelLedSize)
-    ) {
-      leds2.setPixelColor(i, '\xff', '\x00', '\x00');      
+  if(blinkLed == 1) {
+    for(i = 0; i < DEFAULT_LED2_ARRAY_SIZE; i++){   
+      if( (absMode[ABS_FR_BIT] == 1 && i >= ABS_FR_BIT*wheelLedSize && i < ABS_FR_BIT*wheelLedSize + wheelLedSize) || 
+          (absMode[ABS_RR_BIT] == 1 && i >= ABS_RR_BIT*wheelLedSize && i < ABS_RR_BIT*wheelLedSize + wheelLedSize) || 
+          (absMode[ABS_FL_BIT] == 1 && i >= ABS_FL_BIT*wheelLedSize && i < ABS_FL_BIT*wheelLedSize + wheelLedSize) || 
+          (absMode[ABS_RL_BIT] == 1 && i >= ABS_RL_BIT*wheelLedSize && i < ABS_RL_BIT*wheelLedSize + wheelLedSize)
+      ) {
+        leds2.setPixelColor(i, '\xff', '\x00', '\x00');      
+      }
     }
   } 
 }
@@ -818,14 +822,15 @@ uint8_t flipBlinkState(uint8_t state) {
   }
 }
 
-void copyLeds(volatile uint8_t* target, uint8_t* source, uint8_t lSize){
-  for(int i = 0; i < lSize ; i++) {
+void copyLeds(volatile uint8_t* target, uint8_t* source, uint16_t numLeds){
+  //memcpy((void*) target, source, lSize);
+  for(uint16_t i = 0; i < numLeds*3; i++) {
     target[i] = source[i];
   } 
 }
 
-bool equalsLeds(volatile uint8_t* l1, uint8_t* l2, uint8_t lSize) {
-  for(int i = 0; i < lSize ; i++) {
+bool equalsLeds(volatile uint8_t* l1, uint8_t* l2, uint16_t numLeds) {
+  for(uint16_t i = 0; i < numLeds*3; i++) {
     if(l1[i] != l2[i]) {
       return false;  
     }
@@ -837,7 +842,7 @@ bool equalsLeds(volatile uint8_t* l1, uint8_t* l2, uint8_t lSize) {
  * Refresh Callback
  */
 
-void refreshLeds(void){
+void refreshDash(void){
   digitalWrite(3, HIGH);
 
   unsigned long currentTime = millis();
@@ -846,7 +851,6 @@ void refreshLeds(void){
   copyLeds(leds1LastColors, leds1.getPixels(), DEFAULT_LED1_ARRAY_SIZE);
   copyLeds(leds2LastColors, leds2.getPixels(), DEFAULT_LED2_ARRAY_SIZE);
   
-    
   ////////////
   // Leds 1
   ////////////
@@ -949,17 +953,18 @@ void refreshLeds(void){
   }
   
   // ABS
-  /*
   if(processedLeds2 == 0 && 
-    (leds2ABSMode != lastLeds2ABSMode || (leds2DRSMode != 0x00 && lastLed2Mode > byte(BINARY_CMD_ABS)))) {
+    (leds2ABSMode != lastLeds2ABSMode || (leds2ABSMode != 0x00))) {
 
-    loadABSMode(absStatus);
+    if(abs(currentTime-lastBlinkABSTime) > DEFAULT_LED2_ABS_BLINK_MILLIS) {
+      lastBlinkABSTime = currentTime;      
+      loadABSMode(absStatus, ledsBlinkState2);      
+      ledsBlinkState2  = flipBlinkState(ledsBlinkState2);
+    }
     
     lastLeds2ABSMode = leds2ABSMode;
-    lastLed2Mode     = byte(BINARY_CMD_ABS);
     processedLeds2   = 1;      
   }
-  */
   
   if(processedLeds1 == 1 && !equalsLeds(leds1LastColors, leds1.getPixels(), DEFAULT_LED1_ARRAY_SIZE)) {
     leds1.show();
