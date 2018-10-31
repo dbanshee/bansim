@@ -59,6 +59,8 @@
 #define BINARY_CMD_ABS                0x0a
 
 // Timers Default periods
+#define REFRESH_DASH_MILLIS           5L
+
 #define REFRESH_TIMER_MICROSECS       1500L
 #define TACHOMETER_TIMER_MICROSECS    3000L
 
@@ -132,6 +134,7 @@ volatile byte lastLeds2ABSMode = byte(0x00);
 volatile uint8_t absStatus[4]  = {0,0,0,0}; 
 
 
+volatile uint8_t leds1LastColors [DEFAULT_LED1_ARRAY_SIZE];
 volatile uint8_t leds2LastColors [DEFAULT_LED2_ARRAY_SIZE];
 
 ////////////////
@@ -149,6 +152,8 @@ uint8_t inputMode = INPUT_MODE_BINARY;
 char    cmd[16];
 uint8_t cmdlen = 0;
 uint8_t echo   = 0;
+
+unsigned long lastRefreshDash;
 
 /* 
  * Main Setup
@@ -176,7 +181,7 @@ void setup() {
   
   // Timer 1. Rutina de refresco
   Timer1.initialize(REFRESH_TIMER_MICROSECS);
-  Timer1.attachInterrupt(refreshCallback);
+  Timer1.attachInterrupt(refreshLeds);
 
   // Timer 3. Tacometro
   Timer3.initialize(calculateTachPWMPeriod((uint8_t) TACHOMETER_MAX_RPMS));
@@ -209,6 +214,8 @@ void setup() {
   
   // Leds2 General Vars
   leds2FlagMode = lastLeds2FlagMode = (uint8_t) LED2_INTERRUPT_FLAG_NONE;
+
+  lastRefreshDash = millis();
 }
 
 
@@ -216,6 +223,7 @@ void setup() {
  * Main Loop
  */
 void loop() {
+  unsigned long current = millis();
   
   // Read Command. No Block
   if(inputMode == INPUT_MODE_ASCII) {
@@ -225,6 +233,12 @@ void loop() {
   } else {
     executeBinaryCommand(); // Efficient way. Read and execute.
   }
+
+  /*
+  if(current - lastRefreshDash > REFRESH_DASH_MILLIS) {
+      refreshLeds();
+  }
+  */
 }
 
 boolean readASCIICommand() {
@@ -707,7 +721,7 @@ void loadLedFlagMode(uint8_t flagMode, uint8_t blinkLed){
       if(flagMode == LED2_INTERRUPT_FLAG_BLUE) {
         leds2.setPixelColor(i, '\x00', '\x00', '\xff');
       } else if (flagMode == LED2_INTERRUPT_FLAG_YELLOW) {
-        leds2.setPixelColor(i, '\xff', '\x00', '\xff');    
+        leds2.setPixelColor(i, '\xff', '\xff', '\x00');    
       } else if (flagMode == LED2_INTERRUPT_FLAG_BLACK) {
         leds2.setPixelColor(i, '\xa6', '\x5e', '\x2e');
       } else if (flagMode == LED2_INTERRUPT_FLAG_WHITE) {
@@ -804,20 +818,34 @@ uint8_t flipBlinkState(uint8_t state) {
   }
 }
 
+void copyLeds(volatile uint8_t* target, uint8_t* source, uint8_t lSize){
+  for(int i = 0; i < lSize ; i++) {
+    target[i] = source[i];
+  } 
+}
+
+bool equalsLeds(volatile uint8_t* l1, uint8_t* l2, uint8_t lSize) {
+  for(int i = 0; i < lSize ; i++) {
+    if(l1[i] != l2[i]) {
+      return false;  
+    }
+  } 
+  return true; 
+}
 
 /*
  * Refresh Callback
  */
 
-void refreshCallback(void){
+void refreshLeds(void){
   digitalWrite(3, HIGH);
 
   unsigned long currentTime = millis();
   uint8_t processedLeds1 = 0, processedLeds2 = 0;
 
-  for(int i = 0 ; i < DEFAULT_LED2_ARRAY_SIZE ; i++) {
-    leds2LastColors[i] = leds2.getPixelColor(i);
-  }
+  copyLeds(leds1LastColors, leds1.getPixels(), DEFAULT_LED1_ARRAY_SIZE);
+  copyLeds(leds2LastColors, leds2.getPixels(), DEFAULT_LED2_ARRAY_SIZE);
+  
     
   ////////////
   // Leds 1
@@ -850,7 +878,6 @@ void refreshCallback(void){
     lastNeutralTime = currentTime;
 
     loadLedNeutralArray(DEFAULT_LED1_ARRAY_SIZE, ledsNeutralState);  
-    
     ledsNeutralState = flipBlinkState(ledsNeutralState);
     processedLeds1   = 1;
   }
@@ -867,7 +894,6 @@ void refreshCallback(void){
     
     loadLedKittArray(DEFAULT_LED1_ARRAY_SIZE, ledsKittState, ledsKittDirection);
     ledsKittState = ledsKittState + ledsKittDirection;
-    
     processedLeds1 = 1;
   }
   
@@ -898,7 +924,6 @@ void refreshCallback(void){
       lastBlinkTime2 = currentTime;
       loadLedPitLimiterMode(leds2PitLimMode, ledsBlinkState2);
       ledsBlinkState2  = flipBlinkState(ledsBlinkState2);
-      
     }
     
     lastLeds2PitLimMode = leds2PitLimMode;
@@ -910,7 +935,6 @@ void refreshCallback(void){
     (leds2BoostMode != lastLeds2BoostMode || (leds2BoostMode != 0))) {
       
     loadBoostMode(leds2BoostMode);
-    
     lastLeds2BoostMode = leds2BoostMode;
     processedLeds2     = 1;
   }
@@ -920,7 +944,6 @@ void refreshCallback(void){
     (leds2DRSMode != lastLeds2DRSMode || (leds2DRSMode != 0))) {
       
     loadDRSMode(leds2DRSMode);
-    
     lastLeds2DRSMode = leds2DRSMode;
     processedLeds2   = 1;
   }
@@ -938,30 +961,14 @@ void refreshCallback(void){
   }
   */
   
-  if(processedLeds1 == 1) {
-    //cli();
+  if(processedLeds1 == 1 && !equalsLeds(leds1LastColors, leds1.getPixels(), DEFAULT_LED1_ARRAY_SIZE)) {
     leds1.show();
-    //sei();
   }
   
-  if(processedLeds2 == 1) {
-    //cli();
-    
-    bool paint = false;
-    for(int i = 0 ; i < DEFAULT_LED2_ARRAY_SIZE ; i++) {
-      if(leds2LastColors[i] != leds2.getPixelColor(i)) {
-        paint = true;
-        break;  
-      }
-    }
-
-    if(paint) {
-      leds2.show();
-    }
-    //sei();
+  if(processedLeds2 == 1 && !equalsLeds(leds2LastColors, leds2.getPixels(), DEFAULT_LED2_ARRAY_SIZE)) {
+    leds2.show();
   }
   
   digitalWrite(3, LOW);
 }
-
 
