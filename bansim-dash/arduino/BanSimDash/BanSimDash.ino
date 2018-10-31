@@ -67,7 +67,7 @@
 #define DEFAULT_LED1_ARRAY_PIN        14
 #define DEFAULT_LED1_ARRAY_SIZE       12
 #define DEFAULT_LED1_BLINK_MILLIS     100L
-#define DEFAULT_LED1_NEUTRAL_MILLIS   250L
+#define DEFAULT_LED1_NEUTRAL_MILLIS   500L
 
 // Leds1 Strip Config
 #define DEFAULT_LED2_ARRAY_PIN        15
@@ -920,6 +920,20 @@ void refreshDash(void){
     processedLeds2    = 1;   
   }
 
+  // ABS
+  if(processedLeds2 == 0 && 
+    (leds2ABSMode != lastLeds2ABSMode || (leds2ABSMode != 0x00))) {
+
+    if(abs(currentTime-lastBlinkABSTime) > DEFAULT_LED2_ABS_BLINK_MILLIS) {
+      lastBlinkABSTime = currentTime;      
+      loadABSMode(absStatus, ledsBlinkState2);      
+      ledsBlinkState2  = flipBlinkState(ledsBlinkState2);
+    }
+    
+    lastLeds2ABSMode = leds2ABSMode;
+    processedLeds2   = 1;      
+  }
+
   // Pit Limit
   if(processedLeds2 == 0 && 
     (leds2PitLimMode != lastLeds2PitLimMode || leds2PitLimMode != 0)) {
@@ -950,20 +964,6 @@ void refreshDash(void){
     loadDRSMode(leds2DRSMode);
     lastLeds2DRSMode = leds2DRSMode;
     processedLeds2   = 1;
-  }
-  
-  // ABS
-  if(processedLeds2 == 0 && 
-    (leds2ABSMode != lastLeds2ABSMode || (leds2ABSMode != 0x00))) {
-
-    if(abs(currentTime-lastBlinkABSTime) > DEFAULT_LED2_ABS_BLINK_MILLIS) {
-      lastBlinkABSTime = currentTime;      
-      loadABSMode(absStatus, ledsBlinkState2);      
-      ledsBlinkState2  = flipBlinkState(ledsBlinkState2);
-    }
-    
-    lastLeds2ABSMode = leds2ABSMode;
-    processedLeds2   = 1;      
   }
   
   if(processedLeds1 == 1 && !equalsLeds(leds1LastColors, leds1.getPixels(), DEFAULT_LED1_ARRAY_SIZE)) {

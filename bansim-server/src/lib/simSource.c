@@ -1105,15 +1105,26 @@ int getDRS(simSourceContext* ctx) {
     }
 }
 
-uint8_t getABS(simSourceContext* ctx) {
-    uint8_t res = 0x00;
+char getABS(simSourceContext* ctx) {
+    char res = 0x00;
 
-    float speed = ctx->assettoSourceCtx.acCtx->shmPhysics->speedKmh;
-    if(speed > 0) {
-        res = res | (ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[1] << 0); // FR Front Right
-        res = res | (ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[3] << 1); // RR Rear Right
-        res = res | (ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[0] << 2); // FL Front Left
-        res = res | (ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[2] << 3); // RL Rear Left
+    int speed = (int) ctx->assettoSourceCtx.acCtx->shmPhysics->speedKmh;
+    if (speed > 0) {
+        if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[1]) == 0) {
+            res |= 1 << 0;
+        } 
+        
+        if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[3]) == 0) {
+            res |= 1 << 1;
+        } 
+        
+        if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[0]) == 0) {
+            res |= 1 << 2;
+        } 
+        
+        if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[2]) == 0) {
+            res |= 1 << 3;
+        }
     }
     return res;
 }

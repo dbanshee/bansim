@@ -183,14 +183,14 @@ int refreshLEDBar(simCtrlContext* ctx) {
             }
         } else {
             // Neutral start condition
-            if (engineOn && neutralOn == 0 && nGear == 0 && numLeds == 0 && throttle == 0) {
+            if (engineOn && neutralOn == 0 && nGear == 1 && numLeds == 0 && throttle == 0) {
                 startNeutralTime = currentTime;
                 neutralOn = 1;
             }
 
             // Neutral start/stop
             if (neutralOn > 0) {
-                if (neutralOn == 2 && (nGear != 0 || numLeds != 0 || throttle != 0 || !engineOn)) {
+                if (neutralOn == 2 && (nGear != 1 || numLeds != 0 || throttle != 0 || !engineOn)) {
                     sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_NEUTRAL, 0);
                     neutralOn = 0;
                 } else if (neutralOn == 1 && (currentTime - startNeutralTime) > LED_NEUTRAL_DELAY_MILLIS) {
@@ -272,7 +272,7 @@ int refreshLED2Bar(simCtrlContext* ctx) {
 
         if (lastABS != abs) {
             sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_ABS, (uint16_t) abs);
-            lastDrs = drs;
+            lastABS = abs;
         }
     }
 }
