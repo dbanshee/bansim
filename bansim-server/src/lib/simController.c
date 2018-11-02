@@ -52,7 +52,7 @@ static int kittOn = 0;
 
 static long lastTachometer = 0;
 
-void reset();
+void reset(simCtrlContext* ctx);
 int sendSimBoardCmdByte(serialContext* ctx, char cmd, char value);
 int sendSimBoardCmdInt(serialContext* ctx, char cmd, uint16_t value);
 
@@ -78,6 +78,7 @@ int initializetSimCtrlContext(simCtrlContext* ctx) {
     }
     blog(LOG_INFO, "Conexion con puerto COM%d establecida", ctx->serialCtx.comPortNumber);
 
+    reset(ctx);
     return 0;
 }
 
@@ -100,7 +101,7 @@ long current_timestamp() {
     return milliseconds;
 }
 
-void reset() {
+void reset(simCtrlContext* ctx) {
     lastGameState = 0;
     lastLedOn = 0;
     lastSpeed = 0;
@@ -126,7 +127,11 @@ int refreshLEDBar(simCtrlContext* ctx) {
     char buff[5];
 
     int gameState = getGameState(ctx->simSrcCtx);
-
+    
+    if(lastGameState != gameState) {
+        reset(ctx);
+    }
+    
     // Kitt Mode
     if (kittOn == 1 && (gameState != AC_PAUSE)) {
         sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_KITT, 0);
@@ -212,9 +217,9 @@ int refreshLEDBar(simCtrlContext* ctx) {
         lastGear = nGear;
         lastEngineOn = engineOn;
     }
-
+    
     lastGameState = gameState;
-
+    
     return 1;
 }
 
@@ -256,7 +261,7 @@ int refreshLED2Bar(simCtrlContext* ctx) {
         int boost = (getTurboBoost(ctx->simSrcCtx) == 1) ? 1 : 0;
         int drs = getDRS(ctx->simSrcCtx);
         char abs = getABS(ctx->simSrcCtx);
-        char traction = getTraction(ctx->simSrcCtx);
+        //char traction = getTraction(ctx->simSrcCtx);
 
         if (lastFlag != flag) {
             sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_FLAGS, (uint16_t) flag);
@@ -283,10 +288,12 @@ int refreshLED2Bar(simCtrlContext* ctx) {
             lastABS = abs;
         }
         
+        /*
         if (lastTraction != traction) {
             sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_TRACTION, (uint16_t) traction);
             lastTraction = traction;
         }
+        */
     }
 }
 

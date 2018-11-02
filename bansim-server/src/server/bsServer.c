@@ -37,11 +37,11 @@
 
 const char * help = " \n\
 \n\
-BanPCars Server Version : %s \n\
+BanSim Server Version : %s \n\
 \n\
 Usage: \n\
 \n\
-banpcars.exe [-r dumpReadFile] [-w dumpWriteFile] [-d startSecs] [-rest port] [-com port] \n\
+bansim.exe [-r dumpReadFile] [-w dumpWriteFile] [-d startSecs] [-rest port] [-com port] \n\
 \n\
     -g game          : Game [AC|PCARS|IR]\n\
     -r dumpReadFile  : Read dumpFile instead PCars shared memory \n\
@@ -53,7 +53,7 @@ banpcars.exe [-r dumpReadFile] [-w dumpWriteFile] [-d startSecs] [-rest port] [-
 \n\
 \n\
 Example : \n\
-    banpcars.exe -g AC -r dumpSample.dmp -d 20 -rest 8080 -com 7 \n\n\
+    bansim.exe -g AC -r dumpSample.dmp -d 20 -rest 8080 -com 7 \n\n\
 ";
 
 // Flags
@@ -251,7 +251,7 @@ int main(int argc, char** argv) {
     signal(SIGSEGV, signalHandler);
 
     printf("-----------------------------------------\n");
-    printf("-- BanPCars Server      version: %s      \n", PCARS_SERVER_VERSION);
+    printf("-- BanSim Server      version: %s      \n", PCARS_SERVER_VERSION);
     printf("--     Banshee 2015                      \n");
     printf("-- Start at : %s\n", getCurrentDate());
     printf("-----------------------------------------\n\n\n");
@@ -293,7 +293,7 @@ int main(int argc, char** argv) {
             int pCarsConnTry = 1;
             while (pCarsConnTry < PCARS_CONN_RETRIES && initializeACContext(&aCCtx) != 0) {
 
-                blog(LOG_WARN, "No se ha podido establecer conexion con Project Cars. Intento [%d/%d] ...", pCarsConnTry++, PCARS_CONN_RETRIES);
+                blog(LOG_WARN, "No se ha podido establecer conexion con Assetto Corsa. Intento [%d/%d] ...", pCarsConnTry++, PCARS_CONN_RETRIES);
                 Sleep(PCARS_CONN_DELAY_SECS * 1000);
             }
 
@@ -354,7 +354,7 @@ int main(int argc, char** argv) {
 
 
     // Main Loop (exit by signals)
-    blog(LOG_INFO, "BanPCars inicializado correctamente. ");
+    blog(LOG_INFO, "BanSim inicializado correctamente. ");
     while (1) {
 
         // Check and Recover Contexts

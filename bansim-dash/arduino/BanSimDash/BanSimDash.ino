@@ -293,7 +293,8 @@ void resetDash() {
 
   clearLedArray();
   clearLed2Array();
-  
+  leds1.show();
+  leds2.show();
   lastRefreshDash = millis();
 }
 
@@ -403,7 +404,7 @@ boolean executeBinaryCommand(){
       binarySetTraction();
       break;
   case byte(BINARY_CMD_RESET):
-      cmdReset();
+      binaryReset();
       break;
    default: 
       if(echo) Serial.println("Comando no reconocido.");
@@ -714,6 +715,14 @@ void setTraction(byte tr) {
   trStatus[RL_BIT] = bitRead(tr, RL_BIT);
 }
 
+void binaryReset(){
+  cmdReset();
+}
+
+uint8_t cmdReset() {
+  resetDash();
+  return 0;
+}
 
 uint8_t cmdHelp() {
   Serial.print("\n\nBanSimBoard - Help  Version : ");
@@ -740,12 +749,6 @@ uint8_t cmdHelp() {
   Serial.println("      TR=<byte>       : TR  byte encoded FR|FL|RR|RL");
   return 0;
 }
-
-uint8_t cmdReset() {
-  resetDash();
-  return 0;
-}
-
 
 uint8_t cmdVersion() {
   Serial.print("\n\nBanSimBoard - Version : ");
@@ -1041,7 +1044,7 @@ void refreshDash(void){
 
   // ABS
   if(processedLeds2 == 0 && 
-    (leds2ABSMode != lastLeds2ABSMode || (leds2ABSMode != 0x00))) {
+    (leds2ABSMode != lastLeds2ABSMode || (leds2ABSMode != byte(0x00)))) {
 
     if(abs(currentTime-lastBlinkABSTime) > DEFAULT_LED2_ABS_BLINK_MILLIS) {
       lastBlinkABSTime = currentTime;      
@@ -1055,7 +1058,7 @@ void refreshDash(void){
   
   // Traction
   if(processedLeds2 == 0 && 
-    (leds2TRMode != lastLeds2TRMode || (leds2TRMode != 0x00))) {
+    (leds2TRMode != lastLeds2TRMode || (leds2TRMode != byte(0x00)))) {
 
     if(abs(currentTime-lastBlinkABSTime) > DEFAULT_LED2_ABS_BLINK_MILLIS) {
       lastBlinkABSTime = currentTime;      

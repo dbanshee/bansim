@@ -1132,23 +1132,21 @@ char getABS(simSourceContext* ctx) {
 
 char getTraction(simSourceContext* ctx) {
     char res = 0x00;
-    int tranctionSlipThres = -1;
+    float tranctionSlipThres = 10;
     
-    
-
-    if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelSlip[1]) < tranctionSlipThres) {
+    if ((ctx->assettoSourceCtx.acCtx->shmPhysics->wheelSlip[1]) > tranctionSlipThres) {
         res |= 1 << 0;
     }
 
-    if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelSlip[3]) < tranctionSlipThres) {
+    if ((ctx->assettoSourceCtx.acCtx->shmPhysics->wheelSlip[3]) > tranctionSlipThres) {
         res |= 1 << 1;
     }
 
-    if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelSlip[0]) < tranctionSlipThres) {
+    if ((ctx->assettoSourceCtx.acCtx->shmPhysics->wheelSlip[0]) > tranctionSlipThres) {
         res |= 1 << 2;
     }
 
-    if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelSlip[2]) < tranctionSlipThres) {
+    if ((ctx->assettoSourceCtx.acCtx->shmPhysics->wheelSlip[2]) > tranctionSlipThres) {
         res |= 1 << 3;
     }
 
