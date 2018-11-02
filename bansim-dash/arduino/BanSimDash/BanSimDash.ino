@@ -57,6 +57,8 @@
 #define BINARY_CMD_BOOST              0x08
 #define BINARY_CMD_DRS                0x09
 #define BINARY_CMD_ABS                0x0a
+#define BINARY_CMD_TRACTION           0x0b
+#define BINARY_CMD_RESET              0x0c
 
 // Timers Default periods
 #define REFRESH_DASH_MILLIS           50L
@@ -81,10 +83,10 @@
 #define TACHOMETER_PWM_DUTY           512
 
 // ABS CONFIG
-#define ABS_FR_BIT                    0
-#define ABS_RR_BIT                    1
-#define ABS_FL_BIT                    2
-#define ABS_RL_BIT                    3
+#define FR_BIT                        0
+#define RR_BIT                        1
+#define FL_BIT                        2
+#define RL_BIT                        3
 
 ///////////////////
 // Volatile Vars
@@ -133,6 +135,11 @@ volatile byte leds2ABSMode     = byte(0x00);
 volatile byte lastLeds2ABSMode = byte(0x00);
 volatile uint8_t absStatus[4]  = {0,0,0,0}; 
 volatile unsigned long lastBlinkABSTime;
+
+// Traction Mode
+volatile byte leds2TRMode     = byte(0x00);
+volatile byte lastLeds2TRMode = byte(0x00);
+volatile uint8_t trStatus[4]  = {0,0,0,0}; 
 
 
 volatile uint8_t leds1LastColors [DEFAULT_LED1_ARRAY_SIZE*3];
@@ -190,32 +197,23 @@ void setup() {
   delay(2000L);
   Timer3.initialize(calculateTachPWMPeriod((uint8_t) 0));
   Timer3.pwm(DEFAULT_TACHOMETER_ARRAY_PIN, TACHOMETER_PWM_DUTY);
-    
   
   // Initializacion de array de Leds 1
   leds1.begin();
   leds1.setPin(DEFAULT_LED1_ARRAY_PIN);
   leds1.setNumPixels(DEFAULT_LED1_ARRAY_SIZE);
   leds1.setBrightness(LED1_DEFAULT_BRIGHTNESS);
-  clearLedArray();
-  leds1.show();
-  
-  // Leds Mode
-  leds1Mode = LED1_INTERRUPT_MODE_NONE;
-  
-  // Leds1 General Vars
-  nLeds1Active = lastNLeds1Active = ledsBlinkState = 0;
-  
-    // Initializacion de array de Leds 2  
+
+  // Initializacion de array de Leds 2  
   leds2.begin();
   leds2.setPin(DEFAULT_LED2_ARRAY_PIN);
   leds2.setNumPixels(DEFAULT_LED2_ARRAY_SIZE);
   leds2.setBrightness(LED2_DEFAULT_BRIGHTNESS);
-  clearLed2Array();
   
-  // Leds2 General Vars
-  leds2FlagMode = lastLeds2FlagMode = (uint8_t) LED2_INTERRUPT_FLAG_NONE;
-
+  resetDash();
+  leds1.show();
+  leds2.show();
+  
   lastRefreshDash = millis();
 }
 
@@ -240,6 +238,65 @@ void loop() {
       lastRefreshDash = current;
   }
 }
+
+void resetDash() {
+  leds1Mode = LED1_INTERRUPT_MODE_NONE;
+  nLeds1Active = 0;
+  lastNLeds1Active = 0;
+  
+  // Leds1 Blink Control
+  lastBlinkTime = millis();
+  ledsBlinkState = 0;
+  
+  // Leds2 Blink Control
+  lastBlinkTime2 = millis();
+  ledsBlinkState2 = 0;
+  
+  // Leds1 Neutral Control
+  lastNeutralTime = millis();
+  ledsNeutralState = 0;
+  
+  // Leds1 Kitt Control
+  lastKittTime = millis();
+  ledsKittState = 0;
+  ledsKittDirection = 0;
+  
+  // Flag Control
+  leds2FlagMode = LED2_INTERRUPT_FLAG_NONE;
+  lastLeds2FlagMode = LED2_INTERRUPT_FLAG_NONE;
+  
+  // Pit Limit Control
+  leds2PitLimMode = 0;
+  lastLeds2PitLimMode = 0;
+  
+  // Boost Mode
+  leds2BoostMode = 0;
+  lastLeds2BoostMode = 0;
+  
+  // DRS Mode
+  leds2DRSMode = 0;
+  lastLeds2DRSMode = 0;
+  
+  // ABS Mode
+  leds2ABSMode     = byte(0x00);
+  lastLeds2ABSMode = byte(0x00);
+  for(int i = 0; i < 4 ; i++) {
+    absStatus[i] = 0; 
+  }
+  
+  // Traction Mode
+  leds2TRMode     = byte(0x00);
+  lastLeds2TRMode = byte(0x00);
+  for(int i = 0; i < 4 ; i++) {  
+    trStatus[i] = 0; 
+  }
+
+  clearLedArray();
+  clearLed2Array();
+  
+  lastRefreshDash = millis();
+}
+
 
 boolean readASCIICommand() {
   char c;
@@ -273,6 +330,8 @@ void executeASCIICommand() {
     error = cmdSet(cmd+4);
   } else if(strcmp(cmd,"HELP") == 0) {
     error = cmdHelp();
+  } else if(strcmp(cmd,"RESET") == 0) {
+    error = cmdReset();
   } else {
     error = 1;
   }
@@ -340,6 +399,12 @@ boolean executeBinaryCommand(){
    case byte(BINARY_CMD_ABS):
       binarySetABS();
       break;
+  case byte(BINARY_CMD_TRACTION):
+      binarySetTraction();
+      break;
+  case byte(BINARY_CMD_RESET):
+      cmdReset();
+      break;
    default: 
       if(echo) Serial.println("Comando no reconocido.");
       cmdRes = true;
@@ -402,6 +467,10 @@ uint8_t cmdSet(char* v) {
   // ABS
   } else if(strncmp(v,"ABS=",4) == 0){
     setABS(atoi(v+4));
+    
+  // Traction
+  } else if(strncmp(v,"TR=",3) == 0){
+    setTraction(atoi(v+3));
   
   // Default error
   } else {
@@ -617,11 +686,34 @@ void setABS(byte abs) {
   ledsBlinkState2 = 1;
   lastBlinkABSTime = millis() - DEFAULT_LED2_ABS_BLINK_MILLIS;
    
-  absStatus[ABS_FR_BIT] = bitRead(abs, ABS_FR_BIT);
-  absStatus[ABS_RR_BIT] = bitRead(abs, ABS_RR_BIT);
-  absStatus[ABS_FL_BIT] = bitRead(abs, ABS_FL_BIT);
-  absStatus[ABS_RL_BIT] = bitRead(abs, ABS_RL_BIT);
+  absStatus[FR_BIT] = bitRead(abs, FR_BIT);
+  absStatus[RR_BIT] = bitRead(abs, RR_BIT);
+  absStatus[FL_BIT] = bitRead(abs, FL_BIT);
+  absStatus[RL_BIT] = bitRead(abs, RL_BIT);
 }
+
+
+void binarySetTraction(){
+  if(Serial.available() < 1)
+    return;
+
+ byte value = Serial.read();
+  if(echo) { Serial.print("Value : "); Serial.println(value, DEC); }
+
+  setTraction(value);
+}
+
+void setTraction(byte tr) {
+  leds2TRMode = tr;
+  ledsBlinkState2 = 1;
+  lastBlinkABSTime = millis() - DEFAULT_LED2_ABS_BLINK_MILLIS;
+   
+  trStatus[FR_BIT] = bitRead(tr, FR_BIT);
+  trStatus[RR_BIT] = bitRead(tr, RR_BIT);
+  trStatus[FL_BIT] = bitRead(tr, FL_BIT);
+  trStatus[RL_BIT] = bitRead(tr, RL_BIT);
+}
+
 
 uint8_t cmdHelp() {
   Serial.print("\n\nBanSimBoard - Help  Version : ");
@@ -630,6 +722,7 @@ uint8_t cmdHelp() {
   Serial.println("  HELP\\r             : Show this help");
   Serial.println("  ECHO=<0|1>\\r       : Turn on/off echo mode");
   Serial.println("  VERSION\\r          : Show Version");
+  Serial.println("  RESET\\r            : Reset Board");
   Serial.println('\n');
   Serial.println(" ASCII MODE :");
   Serial.println("    SET <OPERATION>=<VALUE>");
@@ -644,8 +737,15 @@ uint8_t cmdHelp() {
   Serial.println("      BOOST=<0|1>     : Boost");
   Serial.println("      DRS=<0|1|2>     : DRS off/zone/on");
   Serial.println("      ABS=<byte>      : ABS byte encoded FR|FL|RR|RL");
+  Serial.println("      TR=<byte>       : TR  byte encoded FR|FL|RR|RL");
   return 0;
 }
+
+uint8_t cmdReset() {
+  resetDash();
+  return 0;
+}
+
 
 uint8_t cmdVersion() {
   Serial.print("\n\nBanSimBoard - Version : ");
@@ -782,12 +882,31 @@ void loadABSMode(volatile uint8_t absMode [], uint8_t blinkLed){
 
   if(blinkLed == 1) {
     for(i = 0; i < DEFAULT_LED2_ARRAY_SIZE; i++){   
-      if( (absMode[ABS_FR_BIT] == 1 && i >= ABS_FR_BIT*wheelLedSize && i < ABS_FR_BIT*wheelLedSize + wheelLedSize) || 
-          (absMode[ABS_RR_BIT] == 1 && i >= ABS_RR_BIT*wheelLedSize && i < ABS_RR_BIT*wheelLedSize + wheelLedSize) || 
-          (absMode[ABS_FL_BIT] == 1 && i >= ABS_FL_BIT*wheelLedSize && i < ABS_FL_BIT*wheelLedSize + wheelLedSize) || 
-          (absMode[ABS_RL_BIT] == 1 && i >= ABS_RL_BIT*wheelLedSize && i < ABS_RL_BIT*wheelLedSize + wheelLedSize)
+      if( (absMode[FR_BIT] == 1 && i >= FR_BIT*wheelLedSize && i < FR_BIT*wheelLedSize + wheelLedSize) || 
+          (absMode[RR_BIT] == 1 && i >= RR_BIT*wheelLedSize && i < RR_BIT*wheelLedSize + wheelLedSize) || 
+          (absMode[FL_BIT] == 1 && i >= FL_BIT*wheelLedSize && i < FL_BIT*wheelLedSize + wheelLedSize) || 
+          (absMode[RL_BIT] == 1 && i >= RL_BIT*wheelLedSize && i < RL_BIT*wheelLedSize + wheelLedSize)
       ) {
         leds2.setPixelColor(i, '\xff', '\x00', '\x00');      
+      }
+    }
+  } 
+}
+
+void loadTRMode(volatile uint8_t trMode [], uint8_t blinkLed){
+  uint8_t i;
+  uint8_t wheelLedSize = DEFAULT_LED2_ARRAY_SIZE / 4;
+  
+  clearLed2Array();
+
+  if(blinkLed == 1) {
+    for(i = 0; i < DEFAULT_LED2_ARRAY_SIZE; i++){   
+      if( (trMode[FR_BIT] == 1 && i >= FR_BIT*wheelLedSize && i < FR_BIT*wheelLedSize + wheelLedSize) || 
+          (trMode[RR_BIT] == 1 && i >= RR_BIT*wheelLedSize && i < RR_BIT*wheelLedSize + wheelLedSize) || 
+          (trMode[FL_BIT] == 1 && i >= FL_BIT*wheelLedSize && i < FL_BIT*wheelLedSize + wheelLedSize) || 
+          (trMode[RL_BIT] == 1 && i >= RL_BIT*wheelLedSize && i < RL_BIT*wheelLedSize + wheelLedSize)
+      ) {
+        leds2.setPixelColor(i, '\x00', '\x00', '\xff');
       }
     }
   } 
@@ -931,6 +1050,20 @@ void refreshDash(void){
     }
     
     lastLeds2ABSMode = leds2ABSMode;
+    processedLeds2   = 1;      
+  }
+  
+  // Traction
+  if(processedLeds2 == 0 && 
+    (leds2TRMode != lastLeds2TRMode || (leds2TRMode != 0x00))) {
+
+    if(abs(currentTime-lastBlinkABSTime) > DEFAULT_LED2_ABS_BLINK_MILLIS) {
+      lastBlinkABSTime = currentTime;      
+      loadTRMode(trStatus, ledsBlinkState2);      
+      ledsBlinkState2  = flipBlinkState(ledsBlinkState2);
+    }
+    
+    lastLeds2TRMode = leds2TRMode;
     processedLeds2   = 1;      
   }
 

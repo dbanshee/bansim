@@ -1054,7 +1054,8 @@ int getGameState(simSourceContext* ctx) {
     if (ctx->currentGame == PCARS_GAME) {
         return ctx->pCarsSourceCtx.pCarsSHM->mGameState;
     } else if (ctx->currentGame == ASSETTO_GAME) {
-        return GAME_INGAME_PLAYING;
+        //return GAME_INGAME_PLAYING;
+        return ctx->assettoSourceCtx.acCtx->shmGraphics->status;
     } else {
         return -1;
     }
@@ -1112,19 +1113,44 @@ char getABS(simSourceContext* ctx) {
     if (speed > 0) {
         if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[1]) == 0) {
             res |= 1 << 0;
-        } 
-        
+        }
+
         if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[3]) == 0) {
             res |= 1 << 1;
-        } 
-        
+        }
+
         if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[0]) == 0) {
             res |= 1 << 2;
-        } 
-        
+        }
+
         if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelAngularSpeed[2]) == 0) {
             res |= 1 << 3;
         }
     }
+    return res;
+}
+
+char getTraction(simSourceContext* ctx) {
+    char res = 0x00;
+    int tranctionSlipThres = -1;
+    
+    
+
+    if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelSlip[1]) < tranctionSlipThres) {
+        res |= 1 << 0;
+    }
+
+    if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelSlip[3]) < tranctionSlipThres) {
+        res |= 1 << 1;
+    }
+
+    if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelSlip[0]) < tranctionSlipThres) {
+        res |= 1 << 2;
+    }
+
+    if (((int) ctx->assettoSourceCtx.acCtx->shmPhysics->wheelSlip[2]) < tranctionSlipThres) {
+        res |= 1 << 3;
+    }
+
     return res;
 }

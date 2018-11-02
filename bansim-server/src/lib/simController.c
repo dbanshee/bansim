@@ -24,6 +24,8 @@
 #define BINARY_CMD_BOOST                0x08
 #define BINARY_CMD_DRS                  0x09
 #define BINARY_CMD_ABS                  0x0a
+#define BINARY_CMD_TRACTION             0x0b
+#define BINARY_CMD_RESET                0x0c
 
 
 static int lastGameState = 0;
@@ -37,6 +39,7 @@ static int lastPitLimiter = 0;
 static int lastBoost = 0;
 static int lastDrs = 0;
 static char lastABS = 0;
+static char lastTraction = 0;
 
 
 static int blinkOn = 0; // 3 estados. 0=OFF, 1=MARCADO, 2=ON
@@ -108,10 +111,14 @@ void reset() {
     lastPitLimiter = 0;
     lastBoost = 0;
     lastDrs = 0;
+    lastABS = 0;
+    lastTraction = 0;
     blinkOn = 0;
     neutralOn = 0;
     kittOn = 0;
     lastTachometer = 0;
+    
+    sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_RESET, 0);
 }
 
 int refreshLEDBar(simCtrlContext* ctx) {
@@ -120,16 +127,17 @@ int refreshLEDBar(simCtrlContext* ctx) {
 
     int gameState = getGameState(ctx->simSrcCtx);
 
-    if (kittOn == 0 && gameState != GAME_INGAME_PLAYING) {
+    // Kitt Mode
+    if (kittOn == 1 && (gameState != AC_PAUSE)) {
+        sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_KITT, 0);
+        kittOn = 0;
+    } else if (kittOn == 0 && (gameState == AC_PAUSE)) {
         sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_KITT, 1);
         kittOn = 1;
-    } else if (gameState == GAME_INGAME_PLAYING) {
+    }
 
-        if (kittOn == 1) {
-            sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_KITT, 0);
-            kittOn = 0;
-        }
 
+    if (gameState == GAME_INGAME_PLAYING) {
         float throttle = getThrottle(ctx->simSrcCtx);
         int nGear = getGear(ctx->simSrcCtx);
         int rpms = getRpm(ctx->simSrcCtx);
@@ -148,7 +156,6 @@ int refreshLEDBar(simCtrlContext* ctx) {
                 numLeds = LED_RPM_NUMLEDS;
             }
         }
-
 
         // Cambio en numero de leds
         if (lastLedOn != numLeds) {
@@ -249,6 +256,7 @@ int refreshLED2Bar(simCtrlContext* ctx) {
         int boost = (getTurboBoost(ctx->simSrcCtx) == 1) ? 1 : 0;
         int drs = getDRS(ctx->simSrcCtx);
         char abs = getABS(ctx->simSrcCtx);
+        char traction = getTraction(ctx->simSrcCtx);
 
         if (lastFlag != flag) {
             sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_FLAGS, (uint16_t) flag);
@@ -273,6 +281,11 @@ int refreshLED2Bar(simCtrlContext* ctx) {
         if (lastABS != abs) {
             sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_ABS, (uint16_t) abs);
             lastABS = abs;
+        }
+        
+        if (lastTraction != traction) {
+            sendSimBoardCmdByte(&ctx->serialCtx, BINARY_CMD_TRACTION, (uint16_t) traction);
+            lastTraction = traction;
         }
     }
 }

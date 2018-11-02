@@ -208,6 +208,7 @@ int getFlagStatus(simSourceContext* ctx);
 float getTurboBoost(simSourceContext* ctx);
 int getDRS(simSourceContext* ctx);
 char getABS(simSourceContext* ctx);
+char getTraction(simSourceContext* ctx);
 
 #endif /* SIMSOURCE_H */
 
